@@ -25,6 +25,7 @@ typedef struct signature_share {
     mpz_t signature;
     mpz_t c;
     mpz_t z;
+    int id;
 } signature_share_t;
 
 void init_public_key(public_key_t * pk);

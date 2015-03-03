@@ -149,7 +149,6 @@ static key_share_t * generate_key_shares(const key_meta_info_t * info, mpz_t n, 
     mpz_t rand;
     mpz_init(rand);
     int rand_bits = mpz_sizeinbase(n, 2) + L1 - mpz_sizeinbase(m, 2);
-    #include <inttypes.h>
     key_share_t * shares = malloc(sizeof(*shares)*info->l);
     
     poly_t * poly = create_random_poly(d, info->k - 1, m);
@@ -271,6 +270,7 @@ void node_sign(signature_share_t * out, int node_id, const key_share_t * share, 
     mpz_add(out->z, out->z, r);
 
     mpz_set(out->signature, xi);
+    out->id = node_id;
     
     mpz_clears(doc, x, r, xi, xi2n, v_prime, x_tilde, x_prime, n, NULL);
 }
@@ -280,6 +280,24 @@ int verify_signature(const signature_share_t * signature, const public_key_t * p
 }
 
 byte * join_signatures(int * out_len, const signature_share_t ** signatures, const public_key_t * pk, const key_meta_info_t * info){
+
     return NULL;   
 }
                      
+
+static void lagrange_interpolation(mpz_t out, int i, int j, int n, const signature_share_t ** signatures, mpz_t delta) {
+    mpz_set(out, delta);
+
+    for (int k=0; k<n; k++) {
+        if(signatures[k]->id != j) {
+            mpz_mul_si(out, out, signatures[k]->id - i);
+        }
+    }
+
+    for (int k=0; k<n; k++) {
+        if(signatures[k]->id != j) {
+            mpz_fdiv_q_ui(out, out, signatures[k]->id - j);
+        }
+    }
+        
+}
