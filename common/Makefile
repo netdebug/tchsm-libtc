@@ -1,4 +1,4 @@
-CC=gcc
+CC=clang
 CFLAGS=-I../include -std=c11 -Wall -Werror -g
 
 OBJS: poly.o random.o init.o algorithms.o
