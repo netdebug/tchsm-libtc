@@ -6,21 +6,22 @@
 #include "algorithms.h"
 
 typedef unsigned char * byte;
+static const unsigned int hash_len = 32; // sha256 => 256 bits => 32 bytes
 
 static void generate_strong_prime(mpz_t out, int bit_len, random_fn random);
 static key_share_t * generate_key_shares(const key_meta_info_t * info, mpz_t n, mpz_t d, mpz_t m);
-static void generate_group_verifier(mpz_t rop, const key_meta_info_t * info, mpz_t n);
-static void generate_share_verifiers(key_share_t * shares, const key_meta_info_t * info, mpz_t n, mpz_t group_verifier);
 static void lagrange_interpolation(mpz_t out, int i, int j, int n, const signature_share_t ** signatures, mpz_t delta);
+static void generate_group_verifier(key_meta_info_t * info, mpz_t n);
+static void generate_share_verifiers(key_meta_info_t * info, const key_share_t * shares, mpz_t n);
 
 // Generates info->l shares, with a threshold of k.
-key_share_t * generate_keys(const key_meta_info_t * info, public_key_t * public_key) {
+key_share_t * generate_keys(key_meta_info_t * info, public_key_t * public_key) {
     static const int F4 = 65537;
 
     int prime_size = info->bit_size / 2;
 
-    mpz_t pr, qr, p, q, d, e, group_size, m, n, group_verifier;
-    mpz_inits(pr, qr, p, q, d, e, group_size, m, n, group_verifier, NULL);
+    mpz_t pr, qr, p, q, d, e, group_size, m, n;
+    mpz_inits(pr, qr, p, q, d, e, group_size, m, n, NULL);
 
     generate_strong_prime(p, prime_size, random_dev);
     generate_strong_prime(q, prime_size, random_dev);
@@ -49,10 +50,10 @@ key_share_t * generate_keys(const key_meta_info_t * info, public_key_t * public_
 
     // generate info->l shares.
     key_share_t * shares = generate_key_shares(info, n, d, m); 
-    generate_group_verifier(group_verifier, info, n);
-    generate_share_verifiers(shares, info, n, group_verifier);
+    generate_group_verifier(info, n);
+    generate_share_verifiers(info, shares, n);
 
-    mpz_clears(pr, qr, p, q, d, e, group_size, m, n, NULL);
+    mpz_clears(pr, qr, p, q, d, e, m, n, NULL);
 
     return shares;
 }
@@ -60,22 +61,24 @@ key_share_t * generate_keys(const key_meta_info_t * info, public_key_t * public_
 void clear_shares(key_share_t * shares, key_meta_info_t * info){
     int i;
     for(i=0; i<info->l; i++) {
-        mpz_clears(shares[i].s_i, shares[i].vk_i, shares[i].vk_v, shares[i].vk_u, NULL);
+        mpz_clears(shares[i].s_i, shares[i].n, NULL);
     }
     free(shares);
 }
 
-/* *
- * It is supposed that all integers are initialized.
- * Even the ones in signatureshare_t out
- * TODO: Assertions. 
- * */
-void node_sign(signature_share_t * out, int node_id, const key_share_t * share, const public_key_t * pk, const byte * document, int document_len) {
+/**
+  Signs the document with the nodes share.
+
+  It is supposed that all integers are initialized. Even the ones in signatureshare_t out.
+ */
+void node_sign(signature_share_t * out, int node_id, const key_share_t * share, 
+        const public_key_t * pk, const key_meta_info_t * info, 
+        const byte * document, int document_len) {
+
     mpz_t doc, x, r, xi, xi2n, v_prime, x_tilde, x_prime, n;
     mpz_inits(doc, x, r, xi, xi2n, v_prime, x_tilde, x_prime, n, NULL);
     mpz_set(n, pk->n);
 
-    static const unsigned int hash_len = 32; // sha256 => 256 bits => 32 bytes
     const unsigned long n_bits = mpz_sizeinbase(n, 2); // Bit size of the key.
 
     mpz_import(doc, document_len, 1, 1, 1, 0, document);
@@ -94,7 +97,7 @@ void node_sign(signature_share_t * out, int node_id, const key_share_t * share, 
     random_dev(r, n_bits + 2*hash_len*8);
 
     // v_prime = v^r % n;
-    mpz_powm(v_prime, share->vk_v, r, n);
+    mpz_powm(v_prime, info->vk_v, r, n);
 
     // x_tilde = x^4 % n
     mpz_powm_ui(x_tilde, x, 4, n);
@@ -106,9 +109,9 @@ void node_sign(signature_share_t * out, int node_id, const key_share_t * share, 
     size_t v_len, v_i_len, xi2n_len, v_prime_len, x_tilde_len, x_prime_len;
 
 
-    void * v_bytes = mpz_export(NULL, &v_len, 1, 1, 1, 0, share->vk_v);
+    void * v_bytes = mpz_export(NULL, &v_len, 1, 1, 1, 0, info->vk_v);
     void * x_tilde_bytes = mpz_export(NULL, &x_tilde_len, 1, 1, 1, 0, x_tilde);
-    void * v_i_bytes = mpz_export(NULL, &v_i_len, 1, 1, 1, 0, share->vk_i);
+    void * v_i_bytes = mpz_export(NULL, &v_i_len, 1, 1, 1, 0, info->vk_i[node_id]);
     void * xi2n_bytes = mpz_export(NULL, &xi2n_len, 1, 1, 1, 0, xi2n);
     void * v_prime_bytes = mpz_export(NULL, &v_prime_len, 1, 1, 1, 0, v_prime);
     void * x_prime_bytes = mpz_export(NULL, &x_prime_len, 1, 1, 1, 0, x_prime);
@@ -226,14 +229,81 @@ static void generate_strong_prime(mpz_t out, int bit_len, random_fn random) {
     mpz_clears(t, i0, a, b, c, d, r, i, p, s, p0, j0, j, NULL);
 }
 
-int verify_signature(const signature_share_t * signature, const public_key_t * pk, int id) {
-    return 0;
+int verify_signature(const signature_share_t * signature, mpz_t doc,
+        const public_key_t * pk, const key_meta_info_t * info, 
+        int id) {
+
+    mpz_t xtilde, xi2, v2prime, x2tilde, aux;
+    mpz_inits(xtilde, xi2, v2prime, x2tilde, aux, NULL);
+
+    mpz_powm_ui(xtilde, doc, 4, pk->n);
+    mpz_powm_ui(xi2, doc, 2, pk->n);
+
+    mpz_powm(aux, info->vk_v, signature->z, pk->n);
+    mpz_powm(v2prime, info->vk_i[id], signature->c, pk->n);
+    mpz_invert(v2prime, v2prime, pk->n);
+    mpz_mul(v2prime, v2prime, aux);
+    mpz_mod(v2prime, v2prime, pk->n);
+
+    mpz_powm(aux, xtilde, signature->z, pk->n);
+    mpz_mul_ui(x2tilde, signature->c, 2);
+    mpz_powm(x2tilde, signature->signature, x2tilde, pk->n);
+    mpz_invert(x2tilde, x2tilde, pk->n);
+    mpz_mul(x2tilde, x2tilde, aux);
+    mpz_mod(x2tilde, x2tilde, pk->n);
+
+
+    size_t v_len, u_len, xtilde_len, v_i_len, xi2_len, v2prime_len, x2tilde_len;
+
+    void * v_bytes = mpz_export(NULL, &v_len, 1, 1, 1, 0, info->vk_v);
+    void * u_bytes = mpz_export(NULL, &u_len, 1, 1, 1, 0, info->vk_u);
+    void * xtilde_bytes = mpz_export(NULL, &xtilde_len, 1, 1, 1, 0, xtilde);
+    void * v_i_bytes = mpz_export(NULL, &v_i_len, 1, 1, 1, 0, info->vk_i[id]);
+    void * xi2_bytes = mpz_export(NULL, &xi2_len, 1, 1, 1, 0, xi2);
+    void * v2prime_bytes = mpz_export(NULL, &v2prime_len, 1, 1, 1, 0, v2prime);
+    void * x2tilde_bytes = mpz_export(NULL, &x2tilde_len, 1, 1, 1, 0, x2tilde);
+
+    // Initialization of the digest context
+
+    unsigned char hash[hash_len];
+    MHASH sha = mhash_init(MHASH_SHA256);
+
+    mhash(sha, v_bytes, v_len);
+    mhash(sha, u_bytes, u_len);
+    mhash(sha, xtilde_bytes, xtilde_len);
+    mhash(sha, v_i_bytes, v_i_len);
+    mhash(sha, xi2_bytes, xi2_len);
+    mhash(sha, v2prime_bytes, v2prime_len);
+    mhash(sha, x2tilde_bytes, x2tilde_len);
+
+    mhash_deinit(sha, hash);
+
+    void (*freefunc) (void *, size_t);
+    mp_get_memory_functions (NULL, NULL, &freefunc);
+
+    freefunc(v_bytes, v_len);
+    freefunc(u_bytes, u_len);
+    freefunc(xtilde_bytes, xtilde_len);
+    freefunc(v_i_bytes, v_i_len);
+    freefunc(xi2_bytes, xi2_len);
+    freefunc(v2prime_bytes, v2prime_len);
+    freefunc(x2tilde_bytes, x2tilde_len);
+
+    mpz_t h;
+    mpz_import(h, hash_len, 1, 1, 1, 0, hash);
+    int result = mpz_cmp(h, signature->c);
+    
+    mpz_clears(xtilde, xi2, v2prime, x2tilde, h, NULL);
+
+    return result == 0;
 }
 
 /* All the signatures are valid before getting them here. 
  * k is the number of signatures in the array
  */
-void join_signatures(mpz_t out, mpz_t document, const signature_share_t ** signatures, int k, const public_key_t * pk, const key_meta_info_t * info){
+void join_signatures(mpz_t out, mpz_t document, 
+        const signature_share_t ** signatures, int k, 
+        const public_key_t * pk, const key_meta_info_t * info){
     mpz_t e_prime;
     mpz_t w, lambda_k_2, delta;
 
@@ -294,27 +364,25 @@ static key_share_t * generate_key_shares(const key_meta_info_t * info, mpz_t n, 
     return shares;
 }
 
-static void generate_group_verifier(mpz_t rop, const key_meta_info_t * info, mpz_t n) {
+static void generate_group_verifier(key_meta_info_t * info, mpz_t n) {
     mpz_t rand, d;
-    mpz_inits(rand, d, NULL);
+    mpz_inits(info->vk_v, info->vk_u, rand, d, NULL);
     do {
         random_dev(rand, mpz_sizeinbase(n, 2));
         mpz_gcd(d, rand, n);
     } while(mpz_cmp_ui(d, 1) != 0);
 
-    mpz_powm_ui(rop, rand, 2, n);
-    mpz_clear(rand);
+    mpz_powm_ui(info->vk_v, rand, 2, n);
+    mpz_clears(rand, d, NULL);
 
 }
 
-static void generate_share_verifiers(key_share_t * shares, const key_meta_info_t * info, mpz_t n, mpz_t group_verifier) {
-    int i;
-    for(i=0; i<info->l; i++) {
-        mpz_init_set(shares[i].vk_v, group_verifier);
-        mpz_init(shares[i].vk_u);
-
-        mpz_init(shares[i].vk_i);
-        mpz_powm(shares[i].vk_i, group_verifier, shares[i].s_i, n);
+/* Should be used after group verifier generation */
+static void generate_share_verifiers(key_meta_info_t * info, const key_share_t * shares, mpz_t n) {
+    info->vk_i = malloc(info->l * sizeof(mpz_t));
+    for (int i=0; i<info->l; i++) {
+        mpz_init(info->vk_i[i]);
+        mpz_powm(info->vk_i[i], info->vk_v, shares[i].s_i, n);
     }
 } 
 

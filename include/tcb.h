@@ -11,13 +11,13 @@ typedef struct key_meta_info {
     int bit_size;
     int k;
     int l;
+    mpz_t vk_v;
+    mpz_t vk_u;
+    mpz_t * vk_i;
 } key_meta_info_t;
 
 typedef struct key_share {
     mpz_t s_i;
-    mpz_t vk_i;
-    mpz_t vk_v;
-    mpz_t vk_u;
     mpz_t n;
 } key_share_t; 
 
