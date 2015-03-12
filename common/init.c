@@ -1,4 +1,5 @@
 #include "tcb.h"
+#include <stdlib.h>
 
 void init_public_key(public_key_t * pk) {
     mpz_inits(pk->n, pk->e, NULL);
@@ -14,7 +15,12 @@ void init_key_meta_info(key_meta_info_t * metainfo, int bit_size, int k, int l) 
     metainfo->l = l;
 }
 
-void clear_key_meta_info(key_meta_info_t * _) {
+void clear_key_meta_info(key_meta_info_t * info) {
+    mpz_clears(info->vk_v, info->vk_u, NULL);
+    for (int i=0; i<info->l; i++) {
+        mpz_clear(info->vk_i[i]);
+    }
+    free(info->vk_i);
 }
 
 void init_signature_share(signature_share_t * ss) {

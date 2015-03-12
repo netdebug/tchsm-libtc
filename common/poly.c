@@ -54,8 +54,8 @@ void poly_eval(mpz_t rop, poly_t * poly, mpz_t op) {
         mpz_mul(aux, coeff[i], rop); 
         mpz_add(rop, op, aux);
     }
-    
-    mpz_clear(rop);
+
+    mpz_clear(aux);
 }
 
 void poly_eval_ui(mpz_t rop, poly_t * poly, unsigned long op) {
