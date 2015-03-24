@@ -10,16 +10,14 @@ typedef struct poly {
 } poly_t;
 
 poly_t * create_random_poly(mpz_t d, int size, mpz_t m) {
-    int i;
-    
     poly_t * poly = malloc(sizeof(*poly));
-    int bit_len = mpz_sizeinbase(m, 2);
+    int bit_len = mpz_sizeinbase(m, 2) - 1;
     
     poly->size = size;
-    mpz_t * coeff = malloc(size*sizeof(*coeff));
+    mpz_t * coeff = malloc(size * sizeof(*coeff));
     
     mpz_init_set(coeff[0], d);
-    for(i = 1; i<size; i++) {
+    for (int i = 1; i < size; i++) {
         mpz_init(coeff[i]);
         random_dev(coeff[i], bit_len);
         mpz_mod(coeff[i], coeff[i], m);
@@ -39,23 +37,24 @@ void clear_poly(poly_t * poly) {
     free(poly);
 }
 
-// Unrolling the stack :)
-void poly_eval(mpz_t rop, poly_t * poly, mpz_t op) {
+/* Horner's method */
+void poly_eval(mpz_t rop, poly_t * poly, mpz_t x) {
     mpz_t * coeff = poly->coeff;
     int size = poly->size;
-    
-    mpz_t aux;
-    mpz_init(aux);
-    
-    mpz_set(rop, coeff[size - 1]);
-    
-    int i;
-    for(i=size - 2; i >= 0; i--) {        
-        mpz_mul(aux, coeff[i], rop); 
-        mpz_add(rop, op, aux);
+
+    mpz_t y;
+
+    /* y = 0 */
+    mpz_init(y); 
+    for (int k=size - 1; k >= 0; k--) {        
+        /* y = a_k + x*y */
+        mpz_mul(y, y, x); 
+        mpz_add(y, y, coeff[k]);
     }
 
-    mpz_clear(aux);
+    mpz_set(rop, y);
+
+    mpz_clear(y);
 }
 
 void poly_eval_ui(mpz_t rop, poly_t * poly, unsigned long op) {

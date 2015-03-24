@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include <gmp.h>
 
 #include "tcb.h"
@@ -15,32 +16,25 @@ int main() {
 
     mpz_t doc;
     mpz_t signature;
-    mpz_inits(doc, signature, NULL);
-    char * document = "Hola mundo!";
-    mpz_import(doc, 11, 1, 1, 1, 0, document);
-    printf("%s = ", document);
-    mpz_out_str(stdout, 62, doc);
-    printf("\n");
-    signature_share_t signatures[5];
+    mpz_init(signature);
+    mpz_init_set_str(doc, "95951009936565630770613232106413300773619435751148631183701517132539356488156", 10);
+
+    gmp_printf("doc = %Zd\n", doc);
+
+    signature_share_t ** signatures = create_signature_shares(&info);;
 
     for (int i=0; i<5; i++) {
-        init_signature_share(&signatures[i]);
-        node_sign(&signatures[i], i, &shares[i], &public_key, &info, doc);
+        node_sign(signatures[i], i, &(shares[i]), &public_key, &info, doc);
+        gmp_printf("s[%d] = %Zd\n", i, signatures[i]->signature);
+        int verify = verify_signature(signatures[i], doc, &public_key, &info, i);
+        printf("Verification=%s\n", verify ? "true" : "false");
     }
 
-    for (int i=0; i<5; i++) {
-        printf("s[%d]=", i);
-        mpz_out_str(stdout, 62, signatures[i].signature);
-        printf("\n");
-        clear_signature_share(&signatures[i]);
-    }
+    
+    join_signatures(signature, doc, (const signature_share_t **)(signatures), 5, &public_key, &info);
+    gmp_printf("signature = %Zd\n", signature);
 
-#if 1
-    join_signatures(signature, doc, signatures, 5, &public_key, &info);
-    printf("signature=");
-    mpz_out_str(stdout, 62, signature);
-    printf("\n");
-#endif
+    destroy_signature_shares(signatures, &info);
     clear_shares(shares, &info);
     mpz_clears(doc, signature, NULL);
     clear_public_key(&public_key);

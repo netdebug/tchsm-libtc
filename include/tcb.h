@@ -4,6 +4,7 @@
 
 typedef struct public_key {
     mpz_t n;
+    mpz_t m;
     mpz_t e;
 } public_key_t;
 
@@ -34,5 +35,7 @@ void init_key_meta_info(key_meta_info_t * metainfo, int bit_size, int k, int l);
 void clear_key_meta_info(key_meta_info_t *);
 void init_signature_share(signature_share_t * ss);
 void clear_signature_share(signature_share_t * ss);
+signature_share_t ** create_signature_shares(key_meta_info_t const * info) ;
+void destroy_signature_shares(signature_share_t ** out, key_meta_info_t const * info) ;
 
 #endif
