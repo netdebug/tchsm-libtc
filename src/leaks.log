@@ -1,0 +1,177 @@
+==10463== Memcheck, a memory error detector
+==10463== Copyright (C) 2002-2013, and GNU GPL'd, by Julian Seward et al.
+==10463== Using Valgrind-3.10.1 and LibVEX; rerun with -h for copyright info
+==10463== Command: ./check_algorithms
+==10463== Parent PID: 8647
+==10463== 
+==10463== Invalid read of size 16
+==10463==    at 0x4E6A19C: __gmpn_copyi_core2 (in /usr/lib/libgmp.so.10.2.0)
+==10463==    by 0x40322C: generate_group_verifier (algorithms_generate_keys.c:90)
+==10463==    by 0x402DC7: generate_keys (algorithms_generate_keys.c:44)
+==10463==    by 0x4055E5: test_generate_keys (check_algorithms.c:43)
+==10463==    by 0x50CD6AA: ??? (in /usr/lib/libcheck.so.0.0.0)
+==10463==    by 0x50CD9F6: srunner_run (in /usr/lib/libcheck.so.0.0.0)
+==10463==    by 0x40624F: main (check_algorithms.c:241)
+==10463==  Address 0x5fec750 is 64 bytes inside a block of size 72 alloc'd
+==10463==    at 0x4C29F90: malloc (in /usr/lib/valgrind/vgpreload_memcheck-amd64-linux.so)
+==10463==    by 0x4E465D8: __gmp_default_allocate (in /usr/lib/libgmp.so.10.2.0)
+==10463==    by 0x4E584D1: __gmpz_mul (in /usr/lib/libgmp.so.10.2.0)
+==10463==    by 0x402BC9: generate_keys (algorithms_generate_keys.c:26)
+==10463==    by 0x4055E5: test_generate_keys (check_algorithms.c:43)
+==10463==    by 0x50CD6AA: ??? (in /usr/lib/libcheck.so.0.0.0)
+==10463==    by 0x50CD9F6: srunner_run (in /usr/lib/libcheck.so.0.0.0)
+==10463==    by 0x40624F: main (check_algorithms.c:241)
+==10463== 
+==10463== Invalid read of size 16
+==10463==    at 0x4E6A19C: __gmpn_copyi_core2 (in /usr/lib/libgmp.so.10.2.0)
+==10463==    by 0x4EA5564: __gmpn_powm (in /usr/lib/libgmp.so.10.2.0)
+==10463==    by 0x4E59A76: __gmpz_powm (in /usr/lib/libgmp.so.10.2.0)
+==10463==    by 0x403387: generate_share_verifiers (algorithms_generate_keys.c:103)
+==10463==    by 0x402DEF: generate_keys (algorithms_generate_keys.c:45)
+==10463==    by 0x4055E5: test_generate_keys (check_algorithms.c:43)
+==10463==    by 0x50CD6AA: ??? (in /usr/lib/libcheck.so.0.0.0)
+==10463==    by 0x50CD9F6: srunner_run (in /usr/lib/libcheck.so.0.0.0)
+==10463==    by 0x40624F: main (check_algorithms.c:241)
+==10463==  Address 0x5fedcc0 is 64 bytes inside a block of size 72 alloc'd
+==10463==    at 0x4C2C29E: realloc (in /usr/lib/valgrind/vgpreload_memcheck-amd64-linux.so)
+==10463==    by 0x4E46623: __gmp_default_reallocate (in /usr/lib/libgmp.so.10.2.0)
+==10463==    by 0x4E5BAB9: __gmpz_realloc (in /usr/lib/libgmp.so.10.2.0)
+==10463==    by 0x4E5B20A: __gmpz_powm_ui (in /usr/lib/libgmp.so.10.2.0)
+==10463==    by 0x4031C1: generate_group_verifier (algorithms_generate_keys.c:85)
+==10463==    by 0x402DC7: generate_keys (algorithms_generate_keys.c:44)
+==10463==    by 0x4055E5: test_generate_keys (check_algorithms.c:43)
+==10463==    by 0x50CD6AA: ??? (in /usr/lib/libcheck.so.0.0.0)
+==10463==    by 0x50CD9F6: srunner_run (in /usr/lib/libcheck.so.0.0.0)
+==10463==    by 0x40624F: main (check_algorithms.c:241)
+==10463== 
+==10463== Invalid read of size 8
+==10463==    at 0x4059A4: test_verify (check_algorithms.c:144)
+==10463==    by 0x50CD6AA: ??? (in /usr/lib/libcheck.so.0.0.0)
+==10463==    by 0x50CD9F6: srunner_run (in /usr/lib/libcheck.so.0.0.0)
+==10463==    by 0x40624F: main (check_algorithms.c:241)
+==10463==  Address 0x609c1c8 is 0 bytes after a block of size 24 alloc'd
+==10463==    at 0x4C29F90: malloc (in /usr/lib/valgrind/vgpreload_memcheck-amd64-linux.so)
+==10463==    by 0x402822: create_signature_shares (init.c:44)
+==10463==    by 0x405959: test_verify (check_algorithms.c:141)
+==10463==    by 0x50CD6AA: ??? (in /usr/lib/libcheck.so.0.0.0)
+==10463==    by 0x50CD9F6: srunner_run (in /usr/lib/libcheck.so.0.0.0)
+==10463==    by 0x40624F: main (check_algorithms.c:241)
+==10463== 
+==10463== Invalid read of size 4
+==10463==    at 0x4E587C1: __gmpz_mul_si (in /usr/lib/libgmp.so.10.2.0)
+==10463==    by 0x403F93: node_sign (algorithms_node_sign.c:27)
+==10463==    by 0x4059CC: test_verify (check_algorithms.c:144)
+==10463==    by 0x50CD6AA: ??? (in /usr/lib/libcheck.so.0.0.0)
+==10463==    by 0x50CD9F6: srunner_run (in /usr/lib/libcheck.so.0.0.0)
+==10463==    by 0x40624F: main (check_algorithms.c:241)
+==10463==  Address 0x609a8c4 is 4 bytes after a block of size 96 alloc'd
+==10463==    at 0x4C29F90: malloc (in /usr/lib/valgrind/vgpreload_memcheck-amd64-linux.so)
+==10463==    by 0x403487: generate_key_shares (algorithms_generate_keys.c:117)
+==10463==    by 0x402D98: generate_keys (algorithms_generate_keys.c:43)
+==10463==    by 0x4058F1: test_verify (check_algorithms.c:134)
+==10463==    by 0x50CD6AA: ??? (in /usr/lib/libcheck.so.0.0.0)
+==10463==    by 0x50CD9F6: srunner_run (in /usr/lib/libcheck.so.0.0.0)
+==10463==    by 0x40624F: main (check_algorithms.c:241)
+==10463== 
+==10463== Invalid read of size 4
+==10463==    at 0x4E5233A: __gmpz_export (in /usr/lib/libgmp.so.10.2.0)
+==10463==    by 0x4041C4: node_sign (algorithms_node_sign.c:51)
+==10463==    by 0x4059CC: test_verify (check_algorithms.c:144)
+==10463==    by 0x50CD6AA: ??? (in /usr/lib/libcheck.so.0.0.0)
+==10463==    by 0x50CD9F6: srunner_run (in /usr/lib/libcheck.so.0.0.0)
+==10463==    by 0x40624F: main (check_algorithms.c:241)
+==10463==  Address 0x609bdf4 is 4 bytes after a block of size 48 alloc'd
+==10463==    at 0x4C29F90: malloc (in /usr/lib/valgrind/vgpreload_memcheck-amd64-linux.so)
+==10463==    by 0x4032D7: generate_share_verifiers (algorithms_generate_keys.c:100)
+==10463==    by 0x402DEF: generate_keys (algorithms_generate_keys.c:45)
+==10463==    by 0x4058F1: test_verify (check_algorithms.c:134)
+==10463==    by 0x50CD6AA: ??? (in /usr/lib/libcheck.so.0.0.0)
+==10463==    by 0x50CD9F6: srunner_run (in /usr/lib/libcheck.so.0.0.0)
+==10463==    by 0x40624F: main (check_algorithms.c:241)
+==10463== 
+==10463== Invalid read of size 4
+==10463==    at 0x4E555F6: __gmpz_import (in /usr/lib/libgmp.so.10.2.0)
+==10463==    by 0x4045A4: node_sign (algorithms_node_sign.c:80)
+==10463==    by 0x4059CC: test_verify (check_algorithms.c:144)
+==10463==    by 0x50CD6AA: ??? (in /usr/lib/libcheck.so.0.0.0)
+==10463==    by 0x50CD9F6: srunner_run (in /usr/lib/libcheck.so.0.0.0)
+==10463==    by 0x40624F: main (check_algorithms.c:241)
+==10463==  Address 0x10 is not stack'd, malloc'd or (recently) free'd
+==10463== 
+==10463== 
+==10463== Process terminating with default action of signal 11 (SIGSEGV)
+==10463==  Access not within mapped region at address 0x10
+==10463==    at 0x4E555F6: __gmpz_import (in /usr/lib/libgmp.so.10.2.0)
+==10463==    by 0x4045A4: node_sign (algorithms_node_sign.c:80)
+==10463==    by 0x4059CC: test_verify (check_algorithms.c:144)
+==10463==    by 0x50CD6AA: ??? (in /usr/lib/libcheck.so.0.0.0)
+==10463==    by 0x50CD9F6: srunner_run (in /usr/lib/libcheck.so.0.0.0)
+==10463==    by 0x40624F: main (check_algorithms.c:241)
+==10463==  If you believe this happened as a result of a stack
+==10463==  overflow in your program's main thread (unlikely but
+==10463==  possible), you can try to increase the size of the
+==10463==  main thread stack using the --main-stacksize= flag.
+==10463==  The main thread stack size used in this run was 8388608.
+==10463== 
+==10463== HEAP SUMMARY:
+==10463==     in use at exit: 4,608 bytes in 82 blocks
+==10463==   total heap usage: 1,624 allocs, 1,542 frees, 773,859 bytes allocated
+==10463== 
+==10463== 72 bytes in 1 blocks are definitely lost in loss record 45 of 60
+==10463==    at 0x4C2C29E: realloc (in /usr/lib/valgrind/vgpreload_memcheck-amd64-linux.so)
+==10463==    by 0x4E46623: __gmp_default_reallocate (in /usr/lib/libgmp.so.10.2.0)
+==10463==    by 0x4E5BAB9: __gmpz_realloc (in /usr/lib/libgmp.so.10.2.0)
+==10463==    by 0x4E4D408: __gmpz_add (in /usr/lib/libgmp.so.10.2.0)
+==10463==    by 0x4E560F8: __gmpz_invert (in /usr/lib/libgmp.so.10.2.0)
+==10463==    by 0x40345D: generate_key_shares (algorithms_generate_keys.c:115)
+==10463==    by 0x402D98: generate_keys (algorithms_generate_keys.c:43)
+==10463==    by 0x4055E5: test_generate_keys (check_algorithms.c:43)
+==10463==    by 0x50CD6AA: ??? (in /usr/lib/libcheck.so.0.0.0)
+==10463==    by 0x50CD9F6: srunner_run (in /usr/lib/libcheck.so.0.0.0)
+==10463==    by 0x40624F: main (check_algorithms.c:241)
+==10463== 
+==10463== 72 bytes in 1 blocks are definitely lost in loss record 46 of 60
+==10463==    at 0x4C2C29E: realloc (in /usr/lib/valgrind/vgpreload_memcheck-amd64-linux.so)
+==10463==    by 0x4E46623: __gmp_default_reallocate (in /usr/lib/libgmp.so.10.2.0)
+==10463==    by 0x4E5BAB9: __gmpz_realloc (in /usr/lib/libgmp.so.10.2.0)
+==10463==    by 0x4E4D408: __gmpz_add (in /usr/lib/libgmp.so.10.2.0)
+==10463==    by 0x4E560F8: __gmpz_invert (in /usr/lib/libgmp.so.10.2.0)
+==10463==    by 0x40345D: generate_key_shares (algorithms_generate_keys.c:115)
+==10463==    by 0x402D98: generate_keys (algorithms_generate_keys.c:43)
+==10463==    by 0x4058F1: test_verify (check_algorithms.c:134)
+==10463==    by 0x50CD6AA: ??? (in /usr/lib/libcheck.so.0.0.0)
+==10463==    by 0x50CD9F6: srunner_run (in /usr/lib/libcheck.so.0.0.0)
+==10463==    by 0x40624F: main (check_algorithms.c:241)
+==10463== 
+==10463== 192 bytes in 3 blocks are definitely lost in loss record 56 of 60
+==10463==    at 0x4C29F90: malloc (in /usr/lib/valgrind/vgpreload_memcheck-amd64-linux.so)
+==10463==    by 0x4E465D8: __gmp_default_allocate (in /usr/lib/libgmp.so.10.2.0)
+==10463==    by 0x4E56854: __gmpz_init_set (in /usr/lib/libgmp.so.10.2.0)
+==10463==    by 0x4047D6: verify_signature (algorithms_verify_signature.c:9)
+==10463==    by 0x405A12: test_verify (check_algorithms.c:145)
+==10463==    by 0x50CD6AA: ??? (in /usr/lib/libcheck.so.0.0.0)
+==10463==    by 0x50CD9F6: srunner_run (in /usr/lib/libcheck.so.0.0.0)
+==10463==    by 0x40624F: main (check_algorithms.c:241)
+==10463== 
+==10463== 192 bytes in 3 blocks are definitely lost in loss record 57 of 60
+==10463==    at 0x4C2C29E: realloc (in /usr/lib/valgrind/vgpreload_memcheck-amd64-linux.so)
+==10463==    by 0x4E46623: __gmp_default_reallocate (in /usr/lib/libgmp.so.10.2.0)
+==10463==    by 0x4E5BAB9: __gmpz_realloc (in /usr/lib/libgmp.so.10.2.0)
+==10463==    by 0x4E5A11E: __gmpz_powm (in /usr/lib/libgmp.so.10.2.0)
+==10463==    by 0x404A29: verify_signature (algorithms_verify_signature.c:32)
+==10463==    by 0x405A12: test_verify (check_algorithms.c:145)
+==10463==    by 0x50CD6AA: ??? (in /usr/lib/libcheck.so.0.0.0)
+==10463==    by 0x50CD9F6: srunner_run (in /usr/lib/libcheck.so.0.0.0)
+==10463==    by 0x40624F: main (check_algorithms.c:241)
+==10463== 
+==10463== LEAK SUMMARY:
+==10463==    definitely lost: 528 bytes in 8 blocks
+==10463==    indirectly lost: 0 bytes in 0 blocks
+==10463==      possibly lost: 0 bytes in 0 blocks
+==10463==    still reachable: 4,080 bytes in 74 blocks
+==10463==         suppressed: 0 bytes in 0 blocks
+==10463== Reachable blocks (those to which a pointer was found) are not shown.
+==10463== To see them, rerun with: --leak-check=full --show-leak-kinds=all
+==10463== 
+==10463== For counts of detected and suppressed errors, rerun with: -v
+==10463== ERROR SUMMARY: 13 errors from 10 contexts (suppressed: 0 from 0)

@@ -35,7 +35,8 @@ void init_key_meta_info(key_meta_info_t * metainfo, int bit_size, int k, int l);
 void clear_key_meta_info(key_meta_info_t *);
 void init_signature_share(signature_share_t * ss);
 void clear_signature_share(signature_share_t * ss);
-signature_share_t ** create_signature_shares(key_meta_info_t const * info) ;
-void destroy_signature_shares(signature_share_t ** out, key_meta_info_t const * info) ;
+
+void init_key_shares(key_share_t * shares, key_meta_info_t * info); 
+void clear_key_shares(key_share_t * shares, key_meta_info_t * info); 
 
 #endif
