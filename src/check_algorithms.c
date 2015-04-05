@@ -42,7 +42,7 @@ START_TEST(test_generate_keys) {
     init_key_shares(shares, &info);
 
     generate_keys(shares, &info, &pk);
-    
+
     mpz_fac_ui(delta, info.l);
 
     mpz_mul(aux, delta, shares[0].s_i);
@@ -58,7 +58,7 @@ START_TEST(test_generate_keys) {
     mpz_clears(d, aux, delta, NULL);
 
     clear_key_shares(shares, &info);
-    clear_key_meta_info(&info);    
+    clear_key_meta_info(&info);
     clear_public_key(&pk);
 }
 END_TEST
@@ -137,7 +137,7 @@ START_TEST(test_complete_sign){
 
     join_signatures(signature,(const signature_share_t *)(signatures), info.l, doc, &public_key, &info);
 
-    ck_assert(verify_rsa(signature, doc, &public_key)); 
+    ck_assert(verify_rsa(signature, doc, &public_key));
 
     for(int i=0; i<info.l; i++) {
         clear_signature_share(signatures + i);
@@ -151,13 +151,108 @@ START_TEST(test_complete_sign){
 }
 END_TEST
 
-/* TODO! */
-#if 0
 START_TEST(test_lagrange_interpolation){
-    
+    signature_share_t S[3];
+    S[0].id = 0;
+    S[1].id = 3;
+    S[2].id = 4;
+
+    mpz_t delta;
+    mpz_init_set_ui(delta, 120);
+    mpz_t out;
+    mpz_init(out);
+
+    lagrange_interpolation(out, 0, 0, 3, S, delta);
+    ck_assert(mpz_cmp_si(out, -1) == 0);
+    lagrange_interpolation(out, 0, 1, 3, S, delta);
+    ck_assert(mpz_cmp_si(out, 0) == 0);
+    lagrange_interpolation(out, 0, 2, 3, S, delta);
+    ck_assert(mpz_cmp_si(out, -1) == 0);
+
+    mpz_clears(delta, out, NULL);
+}
+END_TEST
+
+// TODO!
+#if 0
+START_TEST(test_generate_key_shares){
+
+}
+END_TEST
+
+START_TEST(test_generate_group_verifier){
+
+}
+
+START_TEST(test_generate_group_verifier){
+
+}
+END_TEST
+
+START_TEST(test_random_dev){
+
+}
+END_TEST
+
+START_TEST(test_random_prime){
+    /* Testear que sea primo XD */
 }
 END_TEST
 #endif
+START_TEST(test_poly_eval){
+
+    // Easy cases.
+    mpz_t coeffs[10];
+    mpz_t x, res, y;
+    mpz_inits(x, res, y, NULL);
+    for(int i=0; i<10; i++){
+        mpz_init_set_ui(coeffs[i], 1);
+    }
+    poly_t p = {.coeff = coeffs, .size=10};
+
+    mpz_set_ui(x, 1);
+    poly_eval(res, &p, x);
+    ck_assert(mpz_cmp_ui(res, 10) == 0);
+
+    mpz_set_ui(x, 10);
+
+    mpz_set_str(y, "1111111111", 0);
+    poly_eval(res, &p, x);
+    ck_assert(mpz_cmp(res, y) == 0);
+
+    mpz_set_ui(x, 0);
+    poly_eval(res, &p, x);
+    ck_assert(mpz_cmp_ui(res, 1) == 0);
+
+}
+END_TEST
+
+START_TEST(test_poly_eval_ui){
+    // Easy cases.
+
+    mpz_t res,y;
+    mpz_inits(res,y,NULL);
+
+    mpz_t coeffs[10];
+    for(int i=0; i<10; i++){
+        mpz_init_set_ui(coeffs[i], 1);
+    }
+
+    poly_t p = {.coeff = coeffs, .size=10};
+
+    poly_eval_ui(res, &p, 1);
+    ck_assert(mpz_cmp_si(res, 10) == 0);
+
+    mpz_set_str(y, "1111111111", 0);
+    poly_eval_ui(res, &p, 10);
+    ck_assert(mpz_cmp(res, y) == 0);
+
+    poly_eval_ui(res, &p, 0);
+    ck_assert(mpz_cmp_si(res, 1) == 0);
+    mpz_clears(res,y,NULL);
+}
+END_TEST
+
 
 Suite * algorithms_suite(void)
 {
@@ -171,9 +266,12 @@ Suite * algorithms_suite(void)
 
     tcase_add_test(tc_core, test_generate_keys);
     tcase_add_test(tc_core, test_generate_safe_prime);
-//    tcase_add_test(tc_core, test_node_sign);
+    //    tcase_add_test(tc_core, test_node_sign);
     tcase_add_test(tc_core, test_verify);
     tcase_add_test(tc_core, test_complete_sign);
+    tcase_add_test(tc_core, test_poly_eval);
+    tcase_add_test(tc_core, test_poly_eval_ui);
+    tcase_add_test(tc_core, test_lagrange_interpolation);
     suite_add_tcase(s, tc_core);
 
     tcase_set_timeout(tc_core, 240);
@@ -194,4 +292,3 @@ int main() {
     srunner_free(sr);
     return (number_failed == 0) ? EXIT_SUCCESS : EXIT_FAILURE;
 }
-

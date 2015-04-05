@@ -3,12 +3,15 @@
 
 #include <gmp.h>
 
-typedef void (*random_fn)(mpz_t rop, int bit_len); 
+typedef void (*random_fn)(mpz_t rop, int bit_len);
 
 void random_dev(mpz_t rop, int bit_len);
 void random_prime(mpz_t rop, int bit_len, random_fn random);
 
-typedef struct poly poly_t;
+typedef struct poly {
+  mpz_t * coeff;
+  int size;
+} poly_t;
 
 poly_t * create_random_poly(mpz_t d, int size, mpz_t m);
 void clear_poly(poly_t * poly);

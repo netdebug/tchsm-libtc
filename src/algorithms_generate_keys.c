@@ -59,6 +59,7 @@ void generate_safe_prime(mpz_t out, int bit_len, random_fn random) {
     mpz_t p, q, r;
     mpz_inits(p,q,r,NULL);
     int q_composite, r_composite;
+
     do {
         random_prime(p, bit_len, random);
         mpz_sub_ui(q, p, 1);
