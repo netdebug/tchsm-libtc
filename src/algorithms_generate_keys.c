@@ -2,57 +2,6 @@
 #include <assert.h>
 #include <stdlib.h>
 
-// Generates info->l shares, with a threshold of k.
-
-/**
-  * \param out a key share array with space for at least info->l shares, without initialization.
-  * \param info a pointer to the meta info of the key set to be generated
-  * \param public_key a pointer to a initialized but not defined public_key
-  */
-void generate_keys(key_share_t * out, key_meta_info_t * info, public_key_t * public_key) {
-    /* Preconditions */
-    assert(info != NULL && public_key != NULL && info->k < info-> l);
-    static const int F4 = 65537;
-
-    int prime_size = info->bit_size / 2;
-
-    mpz_t pr, qr, p, q, d, e, group_size, m, n;
-    mpz_inits(pr, qr, p, q, d, e, group_size, m, n, NULL);
-
-    generate_safe_prime(p, prime_size, random_dev);
-    generate_safe_prime(q, prime_size, random_dev);
-
-    mpz_sub_ui(pr, p, 1);
-    mpz_fdiv_q_ui(pr, pr, 2);
-
-    mpz_sub_ui(qr, q, 1);
-    mpz_fdiv_q_ui(qr, qr, 2);
-
-    mpz_mul(m, pr, qr);
-    mpz_mul(n, p, q);
-
-    mpz_set_ui(group_size, info->l);
-    if(mpz_cmp_ui(group_size, F4) <= 0) { // group_size < F4
-        mpz_set_ui(e, F4);
-
-    } else {
-        random_prime(e, mpz_sizeinbase(group_size, 2) + 1, random_dev);        
-    }
-
-    mpz_set(public_key->n, n);
-    mpz_set(public_key->e, e);
-    mpz_set(public_key->m, m);
-
-    mpz_invert(d, e, m);
-
-    // generate info->l shares.
-    generate_key_shares(out, info, n, d, m); 
-    generate_group_verifier(info, n);
-    generate_share_verifiers(info, out);
-
-    mpz_clears(pr, qr, p, q, d, e, group_size, m, n, NULL);
-}
-
 void generate_safe_prime(mpz_t out, int bit_len, random_fn random) {
     static const int c = 25;
 
@@ -136,3 +85,57 @@ void generate_key_shares(key_share_t * shares, const key_meta_info_t * info, mpz
     clear_poly(poly);
     mpz_clears(rand, delta, NULL);
 }
+// Generates info->l shares, with a threshold of k.
+
+/**
+  * \param out a key share array with space for at least info->l shares, without initialization.
+  * \param info a pointer to the meta info of the key set to be generated
+  * \param public_key a pointer to a initialized but not defined public_key
+  */
+tc_error_t generate_keys(key_share_t * out, public_key_t * public_key, key_meta_info_t * info) {
+    /* Preconditions */
+    assert(info != NULL && public_key != NULL && info->k < info-> l);
+    static const int F4 = 65537;
+
+    int prime_size = info->bit_size / 2;
+
+    mpz_t pr, qr, p, q, d, e, group_size, m, n;
+    mpz_inits(pr, qr, p, q, d, e, group_size, m, n, NULL);
+
+    generate_safe_prime(p, prime_size, random_dev);
+    generate_safe_prime(q, prime_size, random_dev);
+
+    mpz_sub_ui(pr, p, 1);
+    mpz_fdiv_q_ui(pr, pr, 2);
+
+    mpz_sub_ui(qr, q, 1);
+    mpz_fdiv_q_ui(qr, qr, 2);
+
+    mpz_mul(m, pr, qr);
+    mpz_mul(n, p, q);
+
+    mpz_set_ui(group_size, info->l);
+    if(mpz_cmp_ui(group_size, F4) <= 0) { // group_size < F4
+        mpz_set_ui(e, F4);
+
+    } else {
+        random_prime(e, mpz_sizeinbase(group_size, 2) + 1, random_dev);        
+    }
+
+    mpz_set(public_key->n, n);
+    mpz_set(public_key->e, e);
+    mpz_set(public_key->m, m);
+
+    mpz_invert(d, e, m);
+
+    // generate info->l shares.
+    generate_key_shares(out, info, n, d, m); 
+    generate_group_verifier(info, n);
+    generate_share_verifiers(info, out);
+
+    mpz_clears(pr, qr, p, q, d, e, group_size, m, n, NULL);
+
+    return TC_OK;
+}
+
+

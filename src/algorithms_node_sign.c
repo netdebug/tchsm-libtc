@@ -14,7 +14,8 @@
   * @param info the meta info of the key share set
   * @param doc the document to be signed
   */
-void node_sign(signature_share_t * out, const key_share_t * share, int node_id, mpz_t doc, const public_key_t * pk, const key_meta_info_t * info) {
+tc_error_t node_sign(signature_share_t * out, const key_share_t * share, int node_id, mpz_t doc, 
+        const public_key_t * pk, const key_meta_info_t * info){
 
     mpz_t x, r, xi, xi_2, v_prime, x_tilde, x_prime, n;
     mpz_inits(x, r, xi, xi_2, v_prime, x_tilde, x_prime, n, NULL);
@@ -96,4 +97,5 @@ void node_sign(signature_share_t * out, const key_share_t * share, int node_id, 
     out->id = node_id;
 
     mpz_clears(x, r, xi, xi_2, v_prime, x_tilde, x_prime, n, NULL);
+    return 0;
 }

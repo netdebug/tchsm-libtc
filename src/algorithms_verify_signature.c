@@ -2,8 +2,9 @@
 
 #include "mhash.h"
 
-int verify_signature(const signature_share_t * signature, int id, mpz_t doc, const public_key_t * pk, const key_meta_info_t * info) {
 
+tc_error_t verify_signature(const signature_share_t * signature, int id, mpz_t doc,
+        const public_key_t * pk, const key_meta_info_t * info){
     mpz_t x, xi, xtilde, xi2, v_prime, x_prime, aux;
     mpz_inits(x, xtilde, xi2, v_prime, x_prime, aux, NULL);
     mpz_init_set(xi, signature->signature);

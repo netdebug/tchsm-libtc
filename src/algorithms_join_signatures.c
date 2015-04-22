@@ -1,5 +1,7 @@
 #include "algorithms.h"
 
+void lagrange_interpolation(mpz_t out, int i, int j, int k, const signature_share_t * S, mpz_t delta);
+
 /* All the signatures are valid before getting them here.
 * k is the number of signatures in the array
 * TODO: verify if the array has less than info->l signatures.
@@ -13,7 +15,7 @@
 * @param pk a pointer to the public key of this process
 * @param info a pointer to the meta info of the key set
 */
-void join_signatures(mpz_t out, const signature_share_t * signatures, int k, mpz_t document, const public_key_t * pk, const key_meta_info_t * info) {
+tc_error_t join_signatures(mpz_t out, const signature_share_t * signatures, int k, mpz_t document, const public_key_t * pk, const key_meta_info_t * info) {
 
   mpz_t e_prime, w, lambda_k_2, delta, aux, a, b, wa, xb, x;
   mpz_inits(e_prime, w, lambda_k_2, delta, aux, a, b, wa, xb, x, NULL);
@@ -48,6 +50,8 @@ void join_signatures(mpz_t out, const signature_share_t * signatures, int k, mpz
   mpz_mod(out, out, pk->n);
 
   mpz_clears(e_prime, w, lambda_k_2, delta, aux, a, b, wa, xb, x, NULL);
+
+  return 0;
 }
 
 void lagrange_interpolation(mpz_t out, int i, int j, int k, const signature_share_t * S, mpz_t delta) {

@@ -6,6 +6,13 @@
 #include "tcb.h"
 #include <mhash.h>
 
+//  UTILS
+void generate_safe_prime(mpz_t out, int bit_len, random_fn random);
+void generate_key_shares(key_share_t * shares, const key_meta_info_t * info, mpz_t n, mpz_t d, mpz_t m);
+void lagrange_interpolation(mpz_t out, int i, int j, int n, const signature_share_t * signatures, mpz_t delta);
+void generate_group_verifier(key_meta_info_t * info, mpz_t n);
+void generate_share_verifiers(key_meta_info_t * info, const key_share_t * shares);
+
 int verify_rsa(const mpz_t signature, const mpz_t hash, const public_key_t * pk) {
     mpz_t dec;
     mpz_init(dec);
@@ -36,12 +43,12 @@ START_TEST(test_generate_keys) {
     key_meta_info_t info;
     public_key_t pk;
     init_public_key(&pk);
-    init_key_meta_info(&info, 512, 2, 3);
+    init_key_meta_info(&info, 512, 3, 5);
 
     key_share_t shares[info.l];
     init_key_shares(shares, &info);
 
-    generate_keys(shares, &info, &pk);
+    generate_keys(shares, &pk, &info);
 
     mpz_fac_ui(delta, info.l);
 
@@ -67,12 +74,12 @@ START_TEST(test_verify){
     key_meta_info_t info;
     public_key_t public_key;
 
-    init_key_meta_info(&info, 512, 2, 3);
+    init_key_meta_info(&info, 512, 3, 5);
     init_public_key(&public_key);
 
     key_share_t shares[info.l];
     init_key_shares(shares, &info);
-    generate_keys(shares, &info, &public_key);
+    generate_keys(shares, &public_key, &info);
 
     mpz_t doc, signature;
     mpz_init(signature);
@@ -104,12 +111,12 @@ END_TEST
 START_TEST(test_complete_sign){
     key_meta_info_t info;
     public_key_t public_key;
-    init_key_meta_info(&info, 512, 2, 3);
+    init_key_meta_info(&info, 512, 3, 5);
     init_public_key(&public_key);
 
     key_share_t shares[info.l];
     init_key_shares(shares, &info);
-    generate_keys(shares, &info, &public_key);
+    generate_keys(shares, &public_key, &info);
 
     mpz_t doc;
     mpz_t signature;
