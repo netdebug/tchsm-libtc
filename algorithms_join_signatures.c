@@ -1,6 +1,8 @@
 #include "algorithms.h"
 
-void lagrange_interpolation(mpz_t out, int i, int j, int k, const signature_share_t * S, mpz_t delta);
+#include <assert.h>
+
+void lagrange_interpolation(mpz_t out, int i, int k, const signature_share_t * S, mpz_t delta);
 
 /* All the signatures are valid before getting them here.
 * k is the number of signatures in the array
@@ -17,36 +19,33 @@ void lagrange_interpolation(mpz_t out, int i, int j, int k, const signature_shar
 */
 tc_error_t join_signatures(mpz_t out, const signature_share_t * signatures, int k, mpz_t document, const public_key_t * pk, const key_meta_info_t * info) {
 
-  mpz_t e_prime, w, lambda_k_2, delta, aux, a, b, wa, xb, x;
-  mpz_inits(e_prime, w, lambda_k_2, delta, aux, a, b, wa, xb, x, NULL);
+  mpz_t e_prime, w, lambda_k_2, delta, aux, a, b, wa, xb, x, t1;
+  mpz_inits(e_prime, w, lambda_k_2, delta, aux, a, b, wa, xb, x, t1, NULL);
 
   mpz_mod(x, document, pk->n);
+  mpz_fac_ui(delta, info->l);
 
-  mpz_set_si(e_prime, 4);
+  mpz_mul(t1, delta, delta);
+  mpz_mul_ui(e_prime, t1, 4);
 
   /* Calculate w */
   mpz_set_si(w, 1);
-  mpz_fac_ui(delta, info->l);
 
   for(int i = 0; i<k; i++) {
     int id = signatures[i].id;
-    lagrange_interpolation(lambda_k_2, 0, id, k, signatures, delta);
-    mpz_mul_si(lambda_k_2, lambda_k_2, 2);
-    mpz_powm(aux, signatures[i].signature, lambda_k_2, pk->n);
-    mpz_mul(w, w, aux);
-    mpz_mod(w, w, pk->n);
+    lagrange_interpolation(t1, id, k, signatures, delta);
+    mpz_mul_ui(lambda_k_2, t1, 2);
+    mpz_powm(t1, signatures[i].signature, lambda_k_2, pk->n);
+    mpz_mul(w, w, t1);
   }
+  mpz_mod(w, w, pk->n);
 
-  mpz_gcdext(aux, a, b, pk->e, e_prime);
+  mpz_gcdext(aux, a, b, e_prime, pk->e);
 
   mpz_powm(wa, w, a, pk->n);
-  mpz_mod(x, document, pk->n);
   mpz_powm(xb, x, b, pk->n);
 
   mpz_mul(out, wa, xb);
-  if (mpz_jacobi(document, pk->n) == -1) {
-    mpz_fdiv_q(out, out, info->vk_u);
-  }
   mpz_mod(out, out, pk->n);
 
   mpz_clears(e_prime, w, lambda_k_2, delta, aux, a, b, wa, xb, x, NULL);
@@ -54,22 +53,22 @@ tc_error_t join_signatures(mpz_t out, const signature_share_t * signatures, int 
   return 0;
 }
 
-void lagrange_interpolation(mpz_t out, int i, int j, int k, const signature_share_t * S, mpz_t delta) {
-  int j_; // j' from the paper.
-  mpz_set(out, delta);
+void lagrange_interpolation(mpz_t out, int j, int k, const signature_share_t * S, mpz_t delta) {
+    mpz_set(out, delta);
+    mpz_t num, den;
+    mpz_init_set_si(num, 1);
+    mpz_init_set_si(den, 1);
 
-  for (int n=0; n<k; n++) {
-    j_ = S[n].id + 1; // id \in [1..l], S[..]->id \in [0..l-1]
-    if(j_ != j) {
-      mpz_mul_si(out, out, i - j_);
+    for(int i=0; i<k; i++) { 
+        int id = S[i].id;
+        if (id != j) {
+            mpz_mul_si(num, num, id); // num <-- num*j_
+            mpz_mul_si(den, den, id - j); // den <-- den*(j_-j)
+        }
     }
-  }
 
-  for (int n=0; n<k; n++) {
-    j_ = S[n].id + 1;
-    if(j_ != j) {
-      mpz_fdiv_q_ui(out, out, j - j_);
-    }
-  }
+    mpz_mul(out, out, num);
+    mpz_fdiv_q(out, out, den); 
 
+    mpz_clears(num, den, NULL);
 }

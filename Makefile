@@ -1,8 +1,8 @@
 CC=clang
 CFLAGS=-std=c11 -Wall -g -O0
-EXTRACFLAGS=-fprofile-instr-generate -fcoverage-mapping
-LDFLAGS=-lgmp -lcheck -lmhash 
-EXTRALDFLAGS=-fprofile-instr-generate 
+EXTRACFLAGS=
+LDFLAGS=-lgmp -lcheck -lmhash -lnettle -lhogweed
+EXTRALDFLAGS=
 
 OBJ=poly.o random.o init.o algorithms_generate_keys.o algorithms_join_signatures.o algorithms_node_sign.o algorithms_verify_signature.o check_algorithms.o algorithms_pkcs1_encoding.o
 DEPS=%.h
@@ -19,4 +19,4 @@ check: check_algorithms
 	./check_algorithms
 	
 clean:
-	rm *.{o,gc{da,no}} 
+	rm *.o check_algorithms

@@ -3,7 +3,6 @@
 
 #include "algorithms.h"
 
-#define OCTET_SIZE(z) ((mpz_sizeinbase(z, 2) + 7) / 8)
 
 const byte MD2_PKCS_ID[] = {
     0x30, 0x20, 0x30, 0x0C, 0x06, 0x08, 0x2A, 0x86, 0x48, 0x86,
@@ -45,45 +44,48 @@ const byte TIGER_PKCS_ID[] = {
     0x30, 0x29, 0x30, 0x0D, 0x06, 0x09, 0x2B, 0x06, 0x01, 0x04,
     0x01, 0xDA, 0x47, 0x0C, 0x02, 0x05, 0x00, 0x04, 0x18 };
 
-static const byte * get_hash_id(int * len, const char * hash_str) {
+#define ASN1_SEQUENCE 0x10
+#define ASN1_CONSTRUCT
+
+static inline void get_hash_properties(const byte ** id, int * id_len, int * digest_len, const char * hash_str) {
     if (!strcmp(hash_str, "SHA-256")) {
-        *len = sizeof(SHA_256_PKCS_ID);
-        return SHA_256_PKCS_ID;
-    } else if (!strcmp(hash_str, "SHA-512")) {
-        *len = sizeof(SHA_512_PKCS_ID);
-        return SHA_512_PKCS_ID;
+        *id_len = sizeof(SHA_256_PKCS_ID);
+        *digest_len = 32;
+        *id = SHA_256_PKCS_ID;
     } else if (!strcmp(hash_str, "NONE")) {
-        *len = 0;
-        return NULL;
+        *id_len = 0;
+        *digest_len = -1;
+        *id = NULL;
     } else { /* ERROR! */
         abort();
     }
 }
 
-byte * pkcs1_encoding(mpz_t signature, char * hash, public_key_t const * pk) {
-    int digest_len = OCTET_SIZE(signature);
-    int k = OCTET_SIZE(pk->n);
-    int hash_desc_len;
-    const byte * hash_desc = get_hash_id(&hash_desc_len, hash);
+void pkcs1_encoding(byte * out, const unsigned char * digest, const char * hash_type, int modulus_size) {
+    int k = modulus_size;
+    const byte * hash_desc;
+    int hash_desc_len, digest_len;
 
-    int D_len = hash_desc_len + digest_len;
+    get_hash_properties(&hash_desc, &hash_desc_len, &digest_len, hash_type);
 
+    int D_len = digest_len + hash_desc_len;
     int P_len = k - 3 - D_len;
-    byte * p = malloc(k);
 
+    byte * p = out;
+    /* PKCS1 padding */
     *p++ = 0x00;
     *p++ = 0x01;
-    memset(&p[2], 0xFF, P_len);
+    memset(p, 0xFF, P_len);
     p += P_len;
     *p++ = 0x00;
 
-    if (hash_desc != NULL) {
-        memcpy(p, hash_desc, hash_desc_len);
-        p += hash_desc_len;
+    if (hash_desc != NULL) { // ASN.1
+       memcpy(p, hash_desc, hash_desc_len);
     }
 
-    size_t len;
-    mpz_export(p, &len, 1, 1, 0, 0, signature);
+    p += hash_desc_len;
 
-    return p;
+    if (digest != NULL) {
+        memcpy(p, digest, digest_len);
+    }
 }

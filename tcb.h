@@ -2,6 +2,12 @@
 #define TCB_H
 #include <gmp.h>
 
+#define TC_GET_OCTETS(z, bcount, op) mpz_import(z, bcount, 1, 1, 0, 0, op)
+#define TC_TO_OCTETS(count, op) mpz_export(NULL, count, 1, 1, 0, 0, op)
+#define TC_ID_TO_INDEX(id) (id-1)
+#define TC_INDEX_TO_ID(idx) (idx+1)
+
+
 typedef struct public_key {
     mpz_t n;
     mpz_t m;
@@ -13,13 +19,13 @@ typedef struct key_meta_info {
     int k;
     int l;
     mpz_t vk_v;
-    mpz_t vk_u;
     mpz_t * vk_i;
 } key_meta_info_t;
 
 typedef struct key_share {
     mpz_t s_i;
     mpz_t n;
+    int id;
 } key_share_t; 
 
 typedef struct signature_share {

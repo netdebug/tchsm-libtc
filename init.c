@@ -16,7 +16,7 @@ void init_key_meta_info(key_meta_info_t * metainfo, int bit_size, int k, int l) 
 }
 
 void clear_key_meta_info(key_meta_info_t * info) {
-    mpz_clears(info->vk_v, info->vk_u, NULL);
+    mpz_clears(info->vk_v, NULL);
     for (int i=0; i<info->l; i++) {
         mpz_clear(info->vk_i[i]);
     }

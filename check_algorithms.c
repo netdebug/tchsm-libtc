@@ -5,24 +5,41 @@
 #include "mathutils.h"
 #include "tcb.h"
 #include <mhash.h>
+#include <nettle/rsa.h>
 
-//  UTILS
 void generate_safe_prime(mpz_t out, int bit_len, random_fn random);
 void generate_key_shares(key_share_t * shares, const key_meta_info_t * info, mpz_t n, mpz_t d, mpz_t m);
-void lagrange_interpolation(mpz_t out, int i, int j, int n, const signature_share_t * signatures, mpz_t delta);
 void generate_group_verifier(key_meta_info_t * info, mpz_t n);
 void generate_share_verifiers(key_meta_info_t * info, const key_share_t * shares);
 
-int verify_rsa(const mpz_t signature, const mpz_t hash, const public_key_t * pk) {
-    mpz_t dec;
-    mpz_init(dec);
-    mpz_powm(dec, signature, pk->e, pk->n);
+void lagrange_interpolation(mpz_t out, int j, int k, const signature_share_t * S, mpz_t delta);
 
-    int res = mpz_cmp(dec, hash);
+START_TEST(test_lagrange_interpolation){
+    const int k = 5;
+    mpz_t out, delta;
+    mpz_inits(out, delta, NULL);
+    signature_share_t S[k];
 
-    mpz_clear(dec);
-    return res;
+    mpz_fac_ui(delta, k);
+
+    for(int i=0; i<k; i++) {
+        S[i].id = TC_INDEX_TO_ID(i);
+    }
+
+    lagrange_interpolation(out, 1,k, S, delta);
+    ck_assert(mpz_cmp_si(out, 600) == 0);
+    lagrange_interpolation(out, 2,k, S, delta);
+    ck_assert(mpz_cmp_si(out, -1200) == 0);
+    lagrange_interpolation(out, 3,k, S, delta);
+    ck_assert(mpz_cmp_si(out, 1200) == 0);
+    lagrange_interpolation(out, 4,k, S, delta);
+    ck_assert(mpz_cmp_si(out, -600) == 0);
+    lagrange_interpolation(out, 5,k, S, delta);
+    ck_assert(mpz_cmp_si(out, 120) == 0);
+
+    mpz_clears(out, delta, NULL);
 }
+END_TEST
 
 START_TEST(test_generate_safe_prime) {
     mpz_t p, q;
@@ -37,36 +54,29 @@ START_TEST(test_generate_safe_prime) {
 }
 END_TEST
 
-START_TEST(test_generate_keys) {
-    mpz_t d, aux, delta;
-    mpz_inits(d, aux, delta, NULL);
-    key_meta_info_t info;
-    public_key_t pk;
-    init_public_key(&pk);
-    init_key_meta_info(&info, 512, 3, 5);
+START_TEST(test_verify_invert) {
+    mpz_t p, q, p_, q_, m, e, d, r;
+    mpz_inits(p,q, p_, q_, m, e, d, r, NULL);
+    generate_safe_prime(p, 512, random_dev);
+    generate_safe_prime(q, 512, random_dev);
 
-    key_share_t shares[info.l];
-    init_key_shares(shares, &info);
+    mpz_sub_ui(p_, p, 1);
+    mpz_fdiv_q_ui(p_, p_, 2);
+    mpz_sub_ui(q_, q, 1);
+    mpz_fdiv_q_ui(q_, q_, 2);
 
-    generate_keys(shares, &pk, &info);
+    mpz_mul(m, p_, q_);
 
-    mpz_fac_ui(delta, info.l);
+    mpz_set_ui(e, 65537);
 
-    mpz_mul(aux, delta, shares[0].s_i);
-    mpz_mul_ui(d, aux, 2);
-    mpz_mul(aux, delta, shares[1].s_i);
-    mpz_sub(d, d, aux);
+    mpz_invert(d, e, m);
 
-    mpz_mul(aux, d, pk.e);
-    mpz_mod(aux, aux, pk.m);
+    mpz_mul(r, d, e);
+    mpz_mod(r, r, m);
 
-    ck_assert(mpz_cmp_ui(aux, 1) == 0);
+    ck_assert(mpz_cmp_si(r, 1) == 0);
 
-    mpz_clears(d, aux, delta, NULL);
-
-    clear_key_shares(shares, &info);
-    clear_key_meta_info(&info);
-    clear_public_key(&pk);
+    mpz_clears(p,q, p_, q_, m, e, d, r, NULL);
 }
 END_TEST
 
@@ -91,8 +101,8 @@ START_TEST(test_verify){
     }
 
     for (int i=0; i<info.l; i++) {
-        node_sign(signatures + i, shares + i, i, doc, &public_key, &info);
-        int verify = verify_signature(signatures + i, i, doc, &public_key, &info);
+        node_sign(signatures + i, shares + i, doc, &public_key, &info);
+        int verify = verify_signature(signatures + i, doc, &public_key, &info);
         ck_assert(verify);
     }
 
@@ -111,7 +121,7 @@ END_TEST
 START_TEST(test_complete_sign){
     key_meta_info_t info;
     public_key_t public_key;
-    init_key_meta_info(&info, 512, 3, 5);
+    init_key_meta_info(&info, 1024, 3, 5);
     init_public_key(&public_key);
 
     key_share_t shares[info.l];
@@ -129,7 +139,11 @@ START_TEST(test_complete_sign){
     mhash(sha, document, 10);
     mhash_deinit(sha, hash);
 
-    mpz_import(doc, 32, 1, 1, 0, 0, hash);
+    int hash_pkcs1_len = OCTET_SIZE(public_key.n);
+    byte hash_pkcs1[hash_pkcs1_len];
+    pkcs1_encoding(hash_pkcs1, hash, "SHA-256", hash_pkcs1_len);
+
+    TC_GET_OCTETS(doc, hash_pkcs1_len, hash_pkcs1);
 
     signature_share_t signatures[info.l];
     for(int i=0; i<info.l; i++) {
@@ -137,14 +151,25 @@ START_TEST(test_complete_sign){
     }
 
     for (int i=0; i<info.l; i++) {
-        node_sign(signatures + i, &(shares[i]), i, doc, &public_key, &info);
-        int verify = verify_signature(signatures + i, i, doc, &public_key, &info);
+        node_sign(signatures + i, shares + i, doc, &public_key, &info);
+        int verify = verify_signature(signatures + i, doc, &public_key, &info);
         ck_assert(verify);
     }
 
-    join_signatures(signature,(const signature_share_t *)(signatures), info.l, doc, &public_key, &info);
+    join_signatures(signature, (const signature_share_t *)(signatures), info.k, doc, &public_key, &info);
 
-    ck_assert(verify_rsa(signature, doc, &public_key));
+    struct rsa_public_key nettle_pk;
+    nettle_rsa_public_key_init(&nettle_pk);
+    
+    mpz_set(nettle_pk.n, public_key.n);
+    mpz_set(nettle_pk.e, public_key.e);
+
+    nettle_rsa_public_key_prepare(&nettle_pk);
+    int result = nettle_rsa_sha256_verify_digest(&nettle_pk, hash, signature);
+
+    ck_assert(result);
+
+    nettle_rsa_public_key_clear(&nettle_pk);
 
     for(int i=0; i<info.l; i++) {
         clear_signature_share(signatures + i);
@@ -153,59 +178,9 @@ START_TEST(test_complete_sign){
     mpz_clears(doc, signature, NULL);
     clear_public_key(&public_key);
     clear_key_meta_info(&info);
-
-
 }
 END_TEST
 
-START_TEST(test_lagrange_interpolation){
-    signature_share_t S[3];
-    S[0].id = 0;
-    S[1].id = 3;
-    S[2].id = 4;
-
-    mpz_t delta;
-    mpz_init_set_ui(delta, 120);
-    mpz_t out;
-    mpz_init(out);
-
-    lagrange_interpolation(out, 0, 0, 3, S, delta);
-    ck_assert(mpz_cmp_si(out, -1) == 0);
-    lagrange_interpolation(out, 0, 1, 3, S, delta);
-    ck_assert(mpz_cmp_si(out, 0) == 0);
-    lagrange_interpolation(out, 0, 2, 3, S, delta);
-    ck_assert(mpz_cmp_si(out, -1) == 0);
-
-    mpz_clears(delta, out, NULL);
-}
-END_TEST
-
-// TODO!
-#if 0
-START_TEST(test_generate_key_shares){
-
-}
-END_TEST
-
-START_TEST(test_generate_group_verifier){
-
-}
-
-START_TEST(test_generate_group_verifier){
-
-}
-END_TEST
-
-START_TEST(test_random_dev){
-
-}
-END_TEST
-
-START_TEST(test_random_prime){
-    /* Testear que sea primo XD */
-}
-END_TEST
-#endif
 START_TEST(test_poly_eval){
 
     // Easy cases.
@@ -271,14 +246,13 @@ Suite * algorithms_suite(void)
     /* Core test case */
     tc_core = tcase_create("Core");
 
-    tcase_add_test(tc_core, test_generate_keys);
+    tcase_add_test(tc_core, test_lagrange_interpolation);
     tcase_add_test(tc_core, test_generate_safe_prime);
-    //    tcase_add_test(tc_core, test_node_sign);
     tcase_add_test(tc_core, test_verify);
+    tcase_add_test(tc_core, test_verify_invert);
     tcase_add_test(tc_core, test_complete_sign);
     tcase_add_test(tc_core, test_poly_eval);
     tcase_add_test(tc_core, test_poly_eval_ui);
-    tcase_add_test(tc_core, test_lagrange_interpolation);
     suite_add_tcase(s, tc_core);
 
     tcase_set_timeout(tc_core, 240);
