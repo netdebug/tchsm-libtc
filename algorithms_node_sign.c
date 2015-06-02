@@ -1,4 +1,5 @@
-#include "algorithms.h"
+#include "tc.h"
+#include "mathutils.h"
 #include <mhash.h>
 
 /*
@@ -13,7 +14,11 @@
   * @param info the meta info of the key share set
   * @param doc the document to be signed
   */
-tc_error_t node_sign(signature_share_t * out, const key_share_t * share, mpz_t doc, 
+
+
+const unsigned int HASH_LEN = 32; // sha256 => 256 bits => 32 bytes
+
+tc_error_t tc_node_sign(signature_share_t * out, const key_share_t * share, mpz_t doc, 
         const public_key_t * pk, const key_meta_info_t * info){
 
     /* ti are temporary variables */

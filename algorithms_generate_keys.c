@@ -1,9 +1,12 @@
-#include "algorithms.h"
+#include "tc.h"
+#include "mathutils.h"
 #include <assert.h>
 #include <stdlib.h>
 
+/* Fast safe prime generation,
+ * if it finds a prime it tries the next probably safe prime or the previous */
 void generate_safe_prime(mpz_t out, int bit_len, random_fn random) {
-    static const int c = 25;
+    static const int c = 25; /* Number of Miller-Rabbin tests */
 
     mpz_t p, q, r, t1;
     mpz_inits(p,q,r,t1,NULL);
@@ -26,7 +29,7 @@ void generate_safe_prime(mpz_t out, int bit_len, random_fn random) {
     mpz_clears(p,q,r,t1,NULL);
 }
 
-void generate_group_verifier(key_meta_info_t * info, mpz_t n) {
+static void generate_group_verifier(key_meta_info_t * info, mpz_t n) {
     mpz_t rand, d, j;
     mpz_inits(info->vk_v, rand, d, j, NULL);
 
@@ -43,7 +46,7 @@ void generate_group_verifier(key_meta_info_t * info, mpz_t n) {
 }
 
 /* Have to be used after group verifier generation */
-void generate_share_verifiers(key_meta_info_t * info, const key_share_t * shares) {
+static void generate_share_verifiers(key_meta_info_t * info, const key_share_t * shares) {
     info->vk_i = malloc(info->l * sizeof(*(info->vk_i)));
     for (int i=0; i<info->l; i++) {
         mpz_init(info->vk_i[i]);
@@ -51,9 +54,7 @@ void generate_share_verifiers(key_meta_info_t * info, const key_share_t * shares
     }
 }
 
-void generate_key_shares(key_share_t * shares, const key_meta_info_t * info, mpz_t n, mpz_t a0, mpz_t m){ 
-    // static const long L1 = 128L; // Security parameter.
-
+static void generate_key_shares(key_share_t * shares, const key_meta_info_t * info, mpz_t n, mpz_t a0, mpz_t m){ 
     int i; 
     mpz_t t1;
     mpz_init(t1);
@@ -77,7 +78,7 @@ void generate_key_shares(key_share_t * shares, const key_meta_info_t * info, mpz
   * \param info a pointer to the meta info of the key set to be generated
   * \param public_key a pointer to a initialized but not defined public_key
   */
-tc_error_t generate_keys(key_share_t * out, public_key_t * public_key, key_meta_info_t * info) {
+tc_error_t tc_generate_keys(key_share_t * out, public_key_t * public_key, key_meta_info_t * info) {
     /* Preconditions */
     assert(info != NULL && public_key != NULL && info->k < info-> l);
     static const int F4 = 65537;

@@ -1,7 +1,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "algorithms.h"
+#include "tc.h"
 
 
 const byte MD2_PKCS_ID[] = {
@@ -61,7 +61,7 @@ static inline void get_hash_properties(const byte ** id, int * id_len, int * dig
     }
 }
 
-void pkcs1_encoding(byte * out, const unsigned char * digest, const char * hash_type, int modulus_size) {
+void tc_pkcs1_encoding(byte * out, const unsigned char * digest, const char * hash_type, int modulus_size) {
     int k = modulus_size;
     const byte * hash_desc;
     int hash_desc_len, digest_len;

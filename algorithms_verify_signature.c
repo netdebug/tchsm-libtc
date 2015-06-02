@@ -1,9 +1,9 @@
-#include "algorithms.h"
+#include "tc.h"
+#include <mhash.h>
 
-#include "mhash.h"
+extern const unsigned int HASH_LEN; /* Defined somewhere :P */
 
-
-int verify_signature(const signature_share_t * signature, mpz_t doc, const public_key_t * pk, const key_meta_info_t * info){
+int tc_verify_signature(const signature_share_t * signature, mpz_t doc, const public_key_t * pk, const key_meta_info_t * info){
     mpz_t x, xi, xtilde, xi2, v_prime, x_prime, aux, delta, neg_c, xi_neg_2c;
     mpz_inits(x, xtilde, xi2, v_prime, x_prime, aux, delta, neg_c, xi_neg_2c, NULL);
     mpz_init_set(xi, signature->signature);

@@ -1,4 +1,4 @@
-#include "algorithms.h"
+#include "tc.h"
 
 #include <assert.h>
 
@@ -17,7 +17,7 @@ void lagrange_interpolation(mpz_t out, int i, int k, const signature_share_t * S
 * @param pk a pointer to the public key of this process
 * @param info a pointer to the meta info of the key set
 */
-tc_error_t join_signatures(mpz_t out, const signature_share_t * signatures, int k, mpz_t document, const public_key_t * pk, const key_meta_info_t * info) {
+tc_error_t tc_join_signatures(mpz_t out, const signature_share_t * signatures, int k, mpz_t document, const public_key_t * pk, const key_meta_info_t * info) {
 
   mpz_t e_prime, w, lambda_k_2, delta, aux, a, b, wa, xb, x, t1;
   mpz_inits(e_prime, w, lambda_k_2, delta, aux, a, b, wa, xb, x, t1, NULL);

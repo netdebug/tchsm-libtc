@@ -1,18 +1,20 @@
-#include <stdlib.h>
-#include <check.h>
-#include <gmp.h>
-#include "algorithms.h"
+/***
+ * Unit and functional tests.
+ *
+ * Generally we only test correct cases.
+ * TODO: We need to test failure cases.
+ */
+#include "tc.h"
 #include "mathutils.h"
-#include "tcb.h"
+#include <stdlib.h>
+#include <gmp.h>
 #include <mhash.h>
+
+#include <check.h>
 #include <nettle/rsa.h>
 
-void generate_safe_prime(mpz_t out, int bit_len, random_fn random);
-void generate_key_shares(key_share_t * shares, const key_meta_info_t * info, mpz_t n, mpz_t d, mpz_t m);
-void generate_group_verifier(key_meta_info_t * info, mpz_t n);
-void generate_share_verifiers(key_meta_info_t * info, const key_share_t * shares);
-
 void lagrange_interpolation(mpz_t out, int j, int k, const signature_share_t * S, mpz_t delta);
+void generate_safe_prime(mpz_t out, int bit_len, random_fn random);
 
 START_TEST(test_lagrange_interpolation){
     const int k = 5;
@@ -84,12 +86,12 @@ START_TEST(test_verify){
     key_meta_info_t info;
     public_key_t public_key;
 
-    init_key_meta_info(&info, 512, 3, 5);
-    init_public_key(&public_key);
+    tc_init_key_meta_info(&info, 512, 3, 5);
+    tc_init_public_key(&public_key);
 
     key_share_t shares[info.l];
-    init_key_shares(shares, &info);
-    generate_keys(shares, &public_key, &info);
+    tc_init_key_shares(shares, &info);
+    tc_generate_keys(shares, &public_key, &info);
 
     mpz_t doc, signature;
     mpz_init(signature);
@@ -97,36 +99,36 @@ START_TEST(test_verify){
 
     signature_share_t signatures[info.l];
     for(int i=0; i<info.l; i++) {
-        init_signature_share(signatures + i);
+        tc_init_signature_share(signatures + i);
     }
 
     for (int i=0; i<info.l; i++) {
-        node_sign(signatures + i, shares + i, doc, &public_key, &info);
-        int verify = verify_signature(signatures + i, doc, &public_key, &info);
+        tc_node_sign(signatures + i, shares + i, doc, &public_key, &info);
+        int verify = tc_verify_signature(signatures + i, doc, &public_key, &info);
         ck_assert(verify);
     }
 
     for(int i=0; i<info.l; i++) {
-        clear_signature_share(signatures + i);
+        tc_clear_signature_share(signatures + i);
     }
 
     mpz_clears(doc, signature, NULL);
 
-    clear_key_shares(shares, &info);
-    clear_public_key(&public_key);
-    clear_key_meta_info(&info);
+    tc_clear_key_shares(shares, &info);
+    tc_clear_public_key(&public_key);
+    tc_clear_key_meta_info(&info);
 }
 END_TEST
 
 START_TEST(test_complete_sign){
     key_meta_info_t info;
     public_key_t public_key;
-    init_key_meta_info(&info, 1024, 3, 5);
-    init_public_key(&public_key);
+    tc_init_key_meta_info(&info, 1024, 3, 5);
+    tc_init_public_key(&public_key);
 
     key_share_t shares[info.l];
-    init_key_shares(shares, &info);
-    generate_keys(shares, &public_key, &info);
+    tc_init_key_shares(shares, &info);
+    tc_generate_keys(shares, &public_key, &info);
 
     mpz_t doc;
     mpz_t signature;
@@ -139,24 +141,24 @@ START_TEST(test_complete_sign){
     mhash(sha, document, 10);
     mhash_deinit(sha, hash);
 
-    int hash_pkcs1_len = OCTET_SIZE(public_key.n);
+    int hash_pkcs1_len = TC_OCTET_SIZE(public_key.n);
     byte hash_pkcs1[hash_pkcs1_len];
-    pkcs1_encoding(hash_pkcs1, hash, "SHA-256", hash_pkcs1_len);
+    tc_pkcs1_encoding(hash_pkcs1, hash, "SHA-256", hash_pkcs1_len);
 
     TC_GET_OCTETS(doc, hash_pkcs1_len, hash_pkcs1);
 
     signature_share_t signatures[info.l];
     for(int i=0; i<info.l; i++) {
-        init_signature_share(signatures + i);
+        tc_init_signature_share(signatures + i);
     }
 
     for (int i=0; i<info.l; i++) {
-        node_sign(signatures + i, shares + i, doc, &public_key, &info);
-        int verify = verify_signature(signatures + i, doc, &public_key, &info);
+        tc_node_sign(signatures + i, shares + i, doc, &public_key, &info);
+        int verify = tc_verify_signature(signatures + i, doc, &public_key, &info);
         ck_assert(verify);
     }
 
-    join_signatures(signature, (const signature_share_t *)(signatures), info.k, doc, &public_key, &info);
+    tc_join_signatures(signature, (const signature_share_t *)(signatures), info.k, doc, &public_key, &info);
 
     struct rsa_public_key nettle_pk;
     nettle_rsa_public_key_init(&nettle_pk);
@@ -172,17 +174,16 @@ START_TEST(test_complete_sign){
     nettle_rsa_public_key_clear(&nettle_pk);
 
     for(int i=0; i<info.l; i++) {
-        clear_signature_share(signatures + i);
+        tc_clear_signature_share(signatures + i);
     }
-    clear_key_shares(shares, &info);
+    tc_clear_key_shares(shares, &info);
     mpz_clears(doc, signature, NULL);
-    clear_public_key(&public_key);
-    clear_key_meta_info(&info);
+    tc_clear_public_key(&public_key);
+    tc_clear_key_meta_info(&info);
 }
 END_TEST
 
 START_TEST(test_poly_eval){
-
     // Easy cases.
     mpz_t coeffs[10];
     mpz_t x, res, y;
@@ -205,13 +206,11 @@ START_TEST(test_poly_eval){
     mpz_set_ui(x, 0);
     poly_eval(res, &p, x);
     ck_assert(mpz_cmp_ui(res, 1) == 0);
-
 }
 END_TEST
 
 START_TEST(test_poly_eval_ui){
     // Easy cases.
-
     mpz_t res,y;
     mpz_inits(res,y,NULL);
 
