@@ -37,15 +37,15 @@ typedef struct signature_share {
 
 typedef unsigned char byte;
 
-void tc_init_public_key(public_key_t * pk);
+public_key_t * tc_init_public_key(public_key_t * pk);
 void tc_clear_public_key(public_key_t * pk);
-void tc_init_key_meta_info(key_meta_info_t * metainfo, int bit_size, int k, int l);
+key_meta_info_t * tc_init_key_meta_info(key_meta_info_t * metainfo, int bit_size, int k, int l);
 void tc_clear_key_meta_info(key_meta_info_t *);
-void tc_init_signature_share(signature_share_t * ss);
+signature_share_t * tc_init_signature_share(signature_share_t * ss);
 void tc_clear_signature_share(signature_share_t * ss);
 
-void tc_init_key_share(key_share_t * share);
-void tc_init_key_shares(key_share_t * shares, key_meta_info_t * info); 
+key_share_t * tc_init_key_share(key_share_t * share);
+key_share_t * tc_init_key_shares(key_share_t * shares, key_meta_info_t * info); 
 void tc_clear_key_shares(key_share_t * shares, key_meta_info_t * info); 
 void tc_clear_key_share(key_share_t * share);
 
