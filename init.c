@@ -23,16 +23,24 @@ void tc_clear_key_meta_info(key_meta_info_t * info) {
     free(info->vk_i);
 }
 
+void tc_init_key_share(key_share_t * share) {
+    mpz_inits(share->s_i, share->n, NULL);
+}
+
 void tc_init_key_shares(key_share_t * shares, key_meta_info_t * info) {
     for(int i=0; i<info->l; i++) {
-        mpz_inits(shares[i].s_i, shares[i].n, NULL);
+        tc_init_key_share(shares+i);
     }
+}
+
+void tc_clear_key_share(key_share_t * share) { 
+    mpz_clears(share->s_i, share->n, NULL);
 }
 
 void tc_clear_key_shares(key_share_t * shares, key_meta_info_t * info){
     int i;
     for(i=0; i<info->l; i++) {
-        mpz_clears(shares[i].s_i, shares[i].n, NULL);
+        tc_clear_key_share(shares + i);
     }
 }
 

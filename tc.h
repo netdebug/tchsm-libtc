@@ -44,8 +44,10 @@ void tc_clear_key_meta_info(key_meta_info_t *);
 void tc_init_signature_share(signature_share_t * ss);
 void tc_clear_signature_share(signature_share_t * ss);
 
+void tc_init_key_share(key_share_t * share);
 void tc_init_key_shares(key_share_t * shares, key_meta_info_t * info); 
 void tc_clear_key_shares(key_share_t * shares, key_meta_info_t * info); 
+void tc_clear_key_share(key_share_t * share);
 
 typedef enum { TC_OK=0 } tc_error_t;
 
