@@ -78,9 +78,9 @@ static void generate_key_shares(key_share_t * shares, const key_meta_info_t * in
   * \param info a pointer to the meta info of the key set to be generated
   * \param public_key a pointer to a initialized but not defined public_key
   */
-tc_error_t tc_generate_keys(key_share_t * out, public_key_t * public_key, key_meta_info_t * info) {
+tc_error_t tc_generate_keys(key_share_t * out, key_meta_info_t * info) {
     /* Preconditions */
-    assert(info != NULL && public_key != NULL && info->k < info-> l);
+    assert(info != NULL && info->public_key!= NULL && info->k < info-> l);
     static const int F4 = 65537;
 
     int prime_size = info->bit_size / 2;
@@ -107,9 +107,9 @@ tc_error_t tc_generate_keys(key_share_t * out, public_key_t * public_key, key_me
         random_prime(e, mpz_sizeinbase(l, 2) + 1, random_dev);        
     }
 
-    mpz_set(public_key->n, n);
-    mpz_set(public_key->e, e);
-    mpz_set(public_key->m, m);
+    mpz_set(info->public_key->n, n);
+    mpz_set(info->public_key->e, e);
+    mpz_set(info->public_key->m, m);
 
     mpz_invert(d, e, m);
 

@@ -17,12 +17,12 @@ void lagrange_interpolation(mpz_t out, int i, int k, const signature_share_t * c
 * @param pk a pointer to the public key of this process
 * @param info a pointer to the meta info of the key set
 */
-tc_error_t tc_join_signatures(mpz_t out, const signature_share_t * const * signatures, int k, mpz_t document, const public_key_t * pk, const key_meta_info_t * info) {
+tc_error_t tc_join_signatures(mpz_t out, const signature_share_t * const * signatures, int k, mpz_t document, const key_meta_info_t * info) {
 
   mpz_t e_prime, w, lambda_k_2, delta, aux, a, b, wa, xb, x, t1;
   mpz_inits(e_prime, w, lambda_k_2, delta, aux, a, b, wa, xb, x, t1, NULL);
 
-  mpz_mod(x, document, pk->n);
+  mpz_mod(x, document, info->public_key->n);
   mpz_fac_ui(delta, info->l);
 
   mpz_mul(t1, delta, delta);
@@ -35,20 +35,20 @@ tc_error_t tc_join_signatures(mpz_t out, const signature_share_t * const * signa
     int id = signatures[i]->id;
     lagrange_interpolation(t1, id, k, signatures, delta);
     mpz_mul_ui(lambda_k_2, t1, 2);
-    mpz_powm(t1, signatures[i]->signature, lambda_k_2, pk->n);
+    mpz_powm(t1, signatures[i]->signature, lambda_k_2, info->public_key->n);
     mpz_mul(w, w, t1);
   }
-  mpz_mod(w, w, pk->n);
+  mpz_mod(w, w, info->public_key->n);
 
-  mpz_gcdext(aux, a, b, e_prime, pk->e);
+  mpz_gcdext(aux, a, b, e_prime, info->public_key->e);
 
-  mpz_powm(wa, w, a, pk->n);
-  mpz_powm(xb, x, b, pk->n);
+  mpz_powm(wa, w, a, info->public_key->n);
+  mpz_powm(xb, x, b, info->public_key->n);
 
   mpz_mul(out, wa, xb);
-  mpz_mod(out, out, pk->n);
+  mpz_mod(out, out, info->public_key->n);
 
-  mpz_clears(e_prime, w, lambda_k_2, delta, aux, a, b, wa, xb, x, NULL);
+  mpz_clears(e_prime, w, lambda_k_2, delta, aux, a, b, wa, xb, x, t1, NULL);
 
   return 0;
 }

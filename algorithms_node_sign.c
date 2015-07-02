@@ -18,13 +18,12 @@
 
 const unsigned int HASH_LEN = 32; // sha256 => 256 bits => 32 bytes
 
-tc_error_t tc_node_sign(signature_share_t * out, const key_share_t * share, mpz_t doc, 
-        const public_key_t * pk, const key_meta_info_t * info){
+tc_error_t tc_node_sign(signature_share_t * out, const key_share_t * share, mpz_t doc, const key_meta_info_t * info){
 
     /* ti are temporary variables */
     mpz_t x, r, t1, t2, xi, xi_2, v_prime, x_tilde, x_prime, n, delta;
     mpz_inits(x, r, t1, t2, xi, xi_2, v_prime, x_tilde, x_prime, n, delta, NULL);
-    mpz_set(n, pk->n);
+    mpz_set(n, info->public_key->n);
     mpz_fac_ui(delta, info->l);
 
     const unsigned long n_bits = mpz_sizeinbase(n, 2); // Bit size of the key.

@@ -91,7 +91,7 @@ START_TEST(test_verify){
 
     key_share_t shares[info.l];
     tc_init_key_shares(shares, &info);
-    tc_generate_keys(shares, &public_key, &info);
+    tc_generate_keys(shares, &info);
 
     mpz_t doc, signature;
     mpz_init(signature);
@@ -103,8 +103,8 @@ START_TEST(test_verify){
     }
 
     for (int i=0; i<info.l; i++) {
-        tc_node_sign(signatures + i, shares + i, doc, &public_key, &info);
-        int verify = tc_verify_signature(signatures + i, doc, &public_key, &info);
+        tc_node_sign(signatures + i, shares + i, doc, &info);
+        int verify = tc_verify_signature(signatures + i, doc, &info);
         ck_assert(verify);
     }
 
@@ -128,7 +128,7 @@ START_TEST(test_complete_sign){
 
     key_share_t shares[info.l];
     tc_init_key_shares(shares, &info);
-    tc_generate_keys(shares, &public_key, &info);
+    tc_generate_keys(shares, &info);
 
     mpz_t doc;
     mpz_t signature;
@@ -153,12 +153,12 @@ START_TEST(test_complete_sign){
     }
 
     for (int i=0; i<info.l; i++) {
-        tc_node_sign(signatures + i, shares + i, doc, &public_key, &info);
-        int verify = tc_verify_signature(signatures + i, doc, &public_key, &info);
+        tc_node_sign(signatures + i, shares + i, doc, &info);
+        int verify = tc_verify_signature(signatures + i, doc, &info);
         ck_assert(verify);
     }
 
-    tc_join_signatures(signature, (const signature_share_t *)(signatures), info.k, doc, &public_key, &info);
+    tc_join_signatures(signature, (const signature_share_t * const *) &signatures, info.k, doc, &info);
 
     struct rsa_public_key nettle_pk;
     nettle_rsa_public_key_init(&nettle_pk);

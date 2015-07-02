@@ -3,12 +3,12 @@
 
 extern const unsigned int HASH_LEN; /* Defined somewhere :P */
 
-int tc_verify_signature(const signature_share_t * signature, mpz_t doc, const public_key_t * pk, const key_meta_info_t * info){
+int tc_verify_signature(const signature_share_t * signature, mpz_t doc, const key_meta_info_t * info){
     mpz_t x, xi, xtilde, xi2, v_prime, x_prime, aux, delta, neg_c, xi_neg_2c;
     mpz_inits(x, xtilde, xi2, v_prime, x_prime, aux, delta, neg_c, xi_neg_2c, NULL);
     mpz_init_set(xi, signature->signature);
     
-    mpz_mod(x, doc, pk->n);
+    mpz_mod(x, doc, info->public_key->n);
 
     int idx = TC_ID_TO_INDEX(signature->id);
 
@@ -17,30 +17,30 @@ int tc_verify_signature(const signature_share_t * signature, mpz_t doc, const pu
     // x~ = x^(4*delta) % n
     mpz_fac_ui(delta, info->l);
     mpz_mul_ui(xtilde, delta, 4);
-    mpz_powm(xtilde, x, xtilde, pk->n);
+    mpz_powm(xtilde, x, xtilde, info->public_key->n);
 
     // v_i
 
     // xi_2 = xi^2 % n
-    mpz_powm_ui(xi2, xi, 2, pk->n);
+    mpz_powm_ui(xi2, xi, 2, info->public_key->n);
 
 
     // v' = v^z * v_i^(-c)
     mpz_neg(neg_c, signature->c);
-    mpz_powm(v_prime, info->vk_i[idx], neg_c, pk->n);
+    mpz_powm(v_prime, info->vk_i[idx], neg_c, info->public_key->n);
 
-    mpz_powm(aux, info->vk_v, signature->z, pk->n);
+    mpz_powm(aux, info->vk_v, signature->z, info->public_key->n);
     mpz_mul(v_prime, v_prime, aux);
-    mpz_mod(v_prime, v_prime, pk->n);
+    mpz_mod(v_prime, v_prime, info->public_key->n);
 
     // x' = x~^z * x_i^(-2c)
     
     mpz_mul_si(aux, neg_c, 2);
-    mpz_powm(xi_neg_2c, xi, aux, pk->n);
+    mpz_powm(xi_neg_2c, xi, aux, info->public_key->n);
 
-    mpz_powm(aux, xtilde, signature->z, pk->n);
+    mpz_powm(aux, xtilde, signature->z, info->public_key->n);
     mpz_mul(x_prime, aux, xi_neg_2c);
-    mpz_mod(x_prime, x_prime, pk->n);
+    mpz_mod(x_prime, x_prime, info->public_key->n);
 
     size_t v_len, xtilde_len, v_i_len, xi2_len, v_prime_len, x_prime_len;
 
@@ -78,11 +78,11 @@ int tc_verify_signature(const signature_share_t * signature, mpz_t doc, const pu
     mpz_t h;
     mpz_init(h);
     TC_GET_OCTETS(h, HASH_LEN, hash);
-    mpz_mod(h, h, pk->n);
-
+    mpz_mod(h, h, info->public_key->n);
     int result = mpz_cmp(h, signature->c);
+    mpz_clear(h);
 
-    mpz_clears(x, xtilde, xi2, v_prime, x_prime, h, neg_c, delta, NULL);
+    mpz_clears(x, xi, xtilde, xi2, v_prime, x_prime, aux, delta, neg_c, xi_neg_2c, NULL);
 
     return result == 0;
 }
