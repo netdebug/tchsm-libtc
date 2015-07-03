@@ -84,10 +84,8 @@ END_TEST
 
 START_TEST(test_verify){
     key_meta_info_t info;
-    public_key_t public_key;
 
     tc_init_key_meta_info(&info, 512, 3, 5);
-    tc_init_public_key(&public_key);
 
     key_share_t shares[info.l];
     tc_init_key_shares(shares, &info);
@@ -115,7 +113,6 @@ START_TEST(test_verify){
     mpz_clears(doc, signature, NULL);
 
     tc_clear_key_shares(shares, &info);
-    tc_clear_public_key(&public_key);
     tc_clear_key_meta_info(&info);
 }
 END_TEST
@@ -124,7 +121,6 @@ START_TEST(test_complete_sign){
     key_meta_info_t info;
     public_key_t public_key;
     tc_init_key_meta_info(&info, 1024, 3, 5);
-    tc_init_public_key(&public_key);
 
     key_share_t shares[info.l];
     tc_init_key_shares(shares, &info);
@@ -178,7 +174,6 @@ START_TEST(test_complete_sign){
     }
     tc_clear_key_shares(shares, &info);
     mpz_clears(doc, signature, NULL);
-    tc_clear_public_key(&public_key);
     tc_clear_key_meta_info(&info);
 }
 END_TEST

@@ -15,12 +15,12 @@ typedef struct public_key {
 } public_key_t;
 
 typedef struct key_meta_info {
+    public_key_t * public_key;
     int bit_size;
     int k;
     int l;
     mpz_t vk_v;
     mpz_t * vk_i;
-    public_key_t * public_key;
 } key_meta_info_t;
 
 typedef struct key_share {
@@ -38,8 +38,6 @@ typedef struct signature_share {
 
 typedef unsigned char byte;
 
-public_key_t * tc_init_public_key(public_key_t * pk);
-void tc_clear_public_key(public_key_t * pk);
 key_meta_info_t * tc_init_key_meta_info(key_meta_info_t * metainfo, int bit_size, int k, int l);
 void tc_clear_key_meta_info(key_meta_info_t *);
 signature_share_t * tc_init_signature_share(signature_share_t * ss);

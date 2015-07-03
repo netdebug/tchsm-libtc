@@ -14,10 +14,16 @@ key_meta_info_t * tc_init_key_meta_info(key_meta_info_t * metainfo, int bit_size
     metainfo->bit_size = bit_size;
     metainfo->k = k;
     metainfo->l = l;
+
+    metainfo->public_key = malloc(sizeof(public_key_t));
+    tc_init_public_key(metainfo->public_key);
     return metainfo;
 }
 
 void tc_clear_key_meta_info(key_meta_info_t * info) {
+    tc_clear_public_key(info->public_key);
+    free(info->public_key);
+
     mpz_clears(info->vk_v, NULL);
     for (int i=0; i<info->l; i++) {
         mpz_clear(info->vk_i[i]);
