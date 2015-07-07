@@ -52,7 +52,7 @@ typedef enum { TC_OK=0 } tc_error_t;
 
 tc_error_t tc_generate_keys(key_share_t * out, key_meta_info_t * info);
 tc_error_t tc_node_sign(signature_share_t * out, const key_share_t * share, mpz_t doc, const key_meta_info_t * info);
-tc_error_t tc_join_signatures(mpz_t out, const signature_share_t * const * signatures, int k, mpz_t document, const key_meta_info_t * info);
+tc_error_t tc_join_signatures(mpz_t out, const signature_share_t * const * signatures, mpz_t document, const key_meta_info_t * info);
 int tc_verify_signature(const signature_share_t * signature, mpz_t doc, const key_meta_info_t * info);
 void tc_pkcs1_encoding(byte * out, const unsigned char * digest, const char * hash_type, int modulus_size);
 

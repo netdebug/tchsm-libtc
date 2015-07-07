@@ -9,34 +9,40 @@
 #include <stdlib.h>
 #include <gmp.h>
 #include <mhash.h>
+#include <alloca.h>
 
 #include <check.h>
 #include <nettle/rsa.h>
 
-void lagrange_interpolation(mpz_t out, int j, int k, const signature_share_t * S, mpz_t delta);
+void lagrange_interpolation(mpz_t out, int j, int k, const signature_share_t * const * S, mpz_t delta);
 void generate_safe_prime(mpz_t out, int bit_len, random_fn random);
 
 START_TEST(test_lagrange_interpolation){
     const int k = 5;
     mpz_t out, delta;
     mpz_inits(out, delta, NULL);
-    signature_share_t S[k];
+
+    signature_share_t SS[] = {
+        {.id = 1},
+        {.id = 2},
+        {.id = 3},
+        {.id = 4},
+        {.id = 5}   
+    };
+    signature_share_t const* S[] = { SS, SS+1, SS+2, SS+3, SS+4 };
 
     mpz_fac_ui(delta, k);
 
-    for(int i=0; i<k; i++) {
-        S[i].id = TC_INDEX_TO_ID(i);
-    }
 
-    lagrange_interpolation(out, 1,k, S, delta);
+    lagrange_interpolation(out, 1, k,  S, delta);
     ck_assert(mpz_cmp_si(out, 600) == 0);
-    lagrange_interpolation(out, 2,k, S, delta);
+    lagrange_interpolation(out, 2, k, S, delta);
     ck_assert(mpz_cmp_si(out, -1200) == 0);
-    lagrange_interpolation(out, 3,k, S, delta);
+    lagrange_interpolation(out, 3, k, S, delta);
     ck_assert(mpz_cmp_si(out, 1200) == 0);
-    lagrange_interpolation(out, 4,k, S, delta);
+    lagrange_interpolation(out, 4, k, S, delta);
     ck_assert(mpz_cmp_si(out, -600) == 0);
-    lagrange_interpolation(out, 5,k, S, delta);
+    lagrange_interpolation(out, 5, k, S, delta);
     ck_assert(mpz_cmp_si(out, 120) == 0);
 
     mpz_clears(out, delta, NULL);
@@ -119,7 +125,6 @@ END_TEST
 
 START_TEST(test_complete_sign){
     key_meta_info_t info;
-    public_key_t public_key;
     tc_init_key_meta_info(&info, 1024, 3, 5);
 
     key_share_t shares[info.l];
@@ -137,30 +142,31 @@ START_TEST(test_complete_sign){
     mhash(sha, document, 10);
     mhash_deinit(sha, hash);
 
-    int hash_pkcs1_len = TC_OCTET_SIZE(public_key.n);
+    int hash_pkcs1_len = TC_OCTET_SIZE(info.public_key->n);
     byte hash_pkcs1[hash_pkcs1_len];
     tc_pkcs1_encoding(hash_pkcs1, hash, "SHA-256", hash_pkcs1_len);
 
     TC_GET_OCTETS(doc, hash_pkcs1_len, hash_pkcs1);
 
-    signature_share_t signatures[info.l];
+    signature_share_t ss[info.l];
+    signature_share_t * signatures[info.l];
     for(int i=0; i<info.l; i++) {
-        tc_init_signature_share(signatures + i);
+        signatures[i] = tc_init_signature_share( ss + i);
     }
 
     for (int i=0; i<info.l; i++) {
-        tc_node_sign(signatures + i, shares + i, doc, &info);
-        int verify = tc_verify_signature(signatures + i, doc, &info);
+        tc_node_sign(signatures[i], shares + i, doc, &info);
+        int verify = tc_verify_signature(signatures[i], doc, &info);
         ck_assert(verify);
     }
 
-    tc_join_signatures(signature, (const signature_share_t * const *) &signatures, info.k, doc, &info);
+    tc_join_signatures(signature, (void*)signatures, doc, &info);
 
     struct rsa_public_key nettle_pk;
     nettle_rsa_public_key_init(&nettle_pk);
     
-    mpz_set(nettle_pk.n, public_key.n);
-    mpz_set(nettle_pk.e, public_key.e);
+    mpz_set(nettle_pk.n, info.public_key->n);
+    mpz_set(nettle_pk.e, info.public_key->e);
 
     nettle_rsa_public_key_prepare(&nettle_pk);
     int result = nettle_rsa_sha256_verify_digest(&nettle_pk, hash, signature);
@@ -170,7 +176,7 @@ START_TEST(test_complete_sign){
     nettle_rsa_public_key_clear(&nettle_pk);
 
     for(int i=0; i<info.l; i++) {
-        tc_clear_signature_share(signatures + i);
+        tc_clear_signature_share(signatures[i]);
     }
     tc_clear_key_shares(shares, &info);
     mpz_clears(doc, signature, NULL);
