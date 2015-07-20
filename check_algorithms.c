@@ -5,14 +5,16 @@
  * TODO: We need to test failure cases.
  */
 #include "tc.h"
+#include "tc_internal.h"
 #include "mathutils.h"
-#include <stdlib.h>
+
 #include <gmp.h>
 #include <mhash.h>
-#include <alloca.h>
 
 #include <check.h>
 #include <nettle/rsa.h>
+
+#include <stdlib.h>
 
 void lagrange_interpolation(mpz_t out, int j, int k, const signature_share_t * const * S, mpz_t delta);
 void generate_safe_prime(mpz_t out, int bit_len, random_fn random);
@@ -214,12 +216,12 @@ Suite * algorithms_suite(void)
     /* Core test case */
     tc_core = tcase_create("Core");
 
-    tcase_add_test(tc_core, test_lagrange_interpolation);
-    tcase_add_test(tc_core, test_generate_safe_prime);
-    tcase_add_test(tc_core, test_verify_invert);
+    // tcase_add_test(tc_core, test_lagrange_interpolation);
+    // tcase_add_test(tc_core, test_generate_safe_prime);
+    // tcase_add_test(tc_core, test_verify_invert);
+    // tcase_add_test(tc_core, test_poly_eval);
+    // tcase_add_test(tc_core, test_poly_eval_ui);
     tcase_add_test(tc_core, test_complete_sign);
-    tcase_add_test(tc_core, test_poly_eval);
-    tcase_add_test(tc_core, test_poly_eval_ui);
     suite_add_tcase(s, tc_core);
 
     tcase_set_timeout(tc_core, 240);

@@ -1,4 +1,5 @@
 #include "tc.h"
+#include "tc_internal.h"
 
 #include <assert.h>
 
