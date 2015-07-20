@@ -17,18 +17,19 @@ void lagrange_interpolation(mpz_t out, int i, int k, const signature_share_t * c
 * @param pk a pointer to the public key of this process
 * @param info a pointer to the meta info of the key set
 */
-tc_error_t tc_join_signatures(mpz_t out, const signature_share_t * const * signatures, mpz_t document, const key_meta_info_t * info) {
-  mpz_t e_prime, w, lambda_k_2, delta, aux, a, b, wa, xb, x, t1;
-  mpz_inits(e_prime, w, lambda_k_2, delta, aux, a, b, wa, xb, x, t1, NULL);
+tc_error_t tc_join_signatures(bytes_t * out, const signature_share_t * const * signatures, const bytes_t * document, const key_meta_info_t * info) {
+  mpz_t x, n, e, delta, e_prime, w, s_i, lambda_k_2, aux, a, b, wa, xb, y;
+  mpz_inits(x, n, e, delta, e_prime, w, s_i, lambda_k_2, aux, a, b, wa, xb, y, NULL);
 
-  mpz_srcptr n = info->public_key->n;
-  mpz_srcptr e = info->public_key->e;
+  TC_BYTES_TO_MPZ(x, *document);
+  TC_BYTES_TO_MPZ(n, info->public_key->n);
+  TC_BYTES_TO_MPZ(e, info->public_key->e);
 
-  mpz_mod(x, document, n);
+  mpz_mod(x, x, n);
   mpz_fac_ui(delta, info->l);
 
-  mpz_mul(t1, delta, delta);
-  mpz_mul_ui(e_prime, t1, 4);
+  mpz_mul(e_prime, delta, delta);
+  mpz_mul_ui(e_prime, e_prime, 4);
 
   /* Calculate w */
   mpz_set_si(w, 1);
@@ -36,10 +37,12 @@ tc_error_t tc_join_signatures(mpz_t out, const signature_share_t * const * signa
   int k = info->k;
   for(int i = 0; i<k; i++) {
     int id = signatures[i]->id;
-    lagrange_interpolation(t1, id, k, signatures, delta);
-    mpz_mul_ui(lambda_k_2, t1, 2);
-    mpz_powm(t1, signatures[i]->signature, lambda_k_2, n);
-    mpz_mul(w, w, t1);
+    TC_BYTES_TO_MPZ(s_i, signatures[i]->signature);
+    lagrange_interpolation(lambda_k_2, id, k, signatures, delta);
+    mpz_mul_ui(lambda_k_2, lambda_k_2, 2);
+
+    mpz_powm(aux, s_i, lambda_k_2, n);
+    mpz_mul(w, w, aux);
   }
   mpz_mod(w, w, n);
 
@@ -48,11 +51,12 @@ tc_error_t tc_join_signatures(mpz_t out, const signature_share_t * const * signa
   mpz_powm(wa, w, a, n);
   mpz_powm(xb, x, b, n);
 
-  mpz_mul(out, wa, xb);
-  mpz_mod(out, out, n);
+  mpz_mul(y, wa, xb);
+  mpz_mod(y, y, n);
 
-  mpz_clears(e_prime, w, lambda_k_2, delta, aux, a, b, wa, xb, x, t1, NULL);
+  TC_MPZ_TO_BYTES(*out, y);
 
+  mpz_clears(x, n, e, delta, e_prime, w, s_i, lambda_k_2, aux, a, b, wa, xb, y, NULL);
   return 0;
 }
 

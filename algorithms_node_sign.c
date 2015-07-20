@@ -18,22 +18,27 @@
 
 const unsigned int HASH_LEN = 32; // sha256 => 256 bits => 32 bytes
 
-tc_error_t tc_node_sign(signature_share_t * out, const key_share_t * share, mpz_t doc, const key_meta_info_t * info){
+tc_error_t tc_node_sign(signature_share_t * out, const key_share_t * share, const bytes_t * doc, const key_meta_info_t * info){
 
     /* ti are temporary variables */
-    mpz_t x, r, t1, t2, xi, xi_2, v_prime, x_tilde, x_prime, n, delta;
-    mpz_inits(x, r, t1, t2, xi, xi_2, v_prime, x_tilde, x_prime, n, delta, NULL);
-    mpz_set(n, info->public_key->n);
+    mpz_t x, n, s_i, vk_v, vk_i, delta, xi, xi_2, r, v_prime, x_tilde, x_prime, c, z;
+    mpz_inits(x, n, s_i, vk_v, vk_i, delta, xi, xi_2, r, v_prime, x_tilde, x_prime, c, z, NULL);
+
+    TC_BYTES_TO_MPZ(x, *doc);
+    TC_BYTES_TO_MPZ(n, info->public_key->n);
+    TC_BYTES_TO_MPZ(s_i, share->s_i);
+    TC_BYTES_TO_MPZ(vk_v, info->vk_v);
+    TC_BYTES_TO_MPZ(vk_i, info->vk_i[TC_ID_TO_INDEX(share->id)]);
     mpz_fac_ui(delta, info->l);
 
     const unsigned long n_bits = mpz_sizeinbase(n, 2); // Bit size of the key.
 
-    mpz_mod(x, doc, n);
+    mpz_mod(x, x, n);
    
     // xi = x^(2*delta*share)
-    mpz_mul_ui(t1, share->s_i, 2);
-    mpz_mul(t2, t1, delta);
-    mpz_powm(xi, x, t2, n);
+    mpz_mul_ui(xi, s_i, 2);
+    mpz_mul(xi, xi, delta);
+    mpz_powm(xi, x, xi, n);
 
     // xi_2 = xi^2 
     mpz_powm_ui(xi_2, xi, 2, n);
@@ -42,11 +47,11 @@ tc_error_t tc_node_sign(signature_share_t * out, const key_share_t * share, mpz_
     random_dev(r, n_bits + 2*HASH_LEN*8);
 
     // v_prime = v^r % n
-    mpz_powm(v_prime, info->vk_v, r, n);
+    mpz_powm(v_prime, vk_v, r, n);
 
     // x_tilde = x^4 % n
-    mpz_mul_ui(t1, delta, 4);
-    mpz_powm(x_tilde, x, t1, n);
+    mpz_mul_ui(x_tilde, delta, 4);
+    mpz_powm(x_tilde, x, x_tilde, n);
 
     // x_prime = x_tilde^r % n
     mpz_powm(x_prime, x_tilde, r, n);
@@ -55,9 +60,9 @@ tc_error_t tc_node_sign(signature_share_t * out, const key_share_t * share, mpz_
     size_t v_len, x_tilde_len, v_i_len, xi_2_len, v_prime_len, x_prime_len;
 
 
-    void * v_bytes = TC_TO_OCTETS(&v_len, info->vk_v);
+    void * v_bytes = TC_TO_OCTETS(&v_len, vk_v);
     void * x_tilde_bytes = TC_TO_OCTETS(&x_tilde_len, x_tilde);
-    void * v_i_bytes = TC_TO_OCTETS(&v_i_len, info->vk_i[TC_ID_TO_INDEX(share->id)]);
+    void * v_i_bytes = TC_TO_OCTETS(&v_i_len, vk_i);
     void * xi_2_bytes = TC_TO_OCTETS(&xi_2_len, xi_2);
     void * v_prime_bytes = TC_TO_OCTETS(&v_prime_len, v_prime);
     void * x_prime_bytes = TC_TO_OCTETS(&x_prime_len, x_prime);
@@ -86,16 +91,18 @@ tc_error_t tc_node_sign(signature_share_t * out, const key_share_t * share, mpz_
     freefunc(v_prime_bytes, v_prime_len);
     freefunc(x_prime_bytes, x_prime_len);
 
-    TC_GET_OCTETS(t1, HASH_LEN, hash);
-    mpz_mod(out->c, t1, n);
+    TC_GET_OCTETS(c, HASH_LEN, hash);
+    mpz_mod(c, c, n);
     free(hash);
 
-    mpz_mul(t1, out->c, share->s_i);
-    mpz_add(out->z, t1, r);
+    mpz_mul(z, c, s_i);
+    mpz_add(z, z, r);
 
-    mpz_set(out->signature, xi);
+    TC_MPZ_TO_BYTES(out->c, c);
+    TC_MPZ_TO_BYTES(out->z, z);
+    TC_MPZ_TO_BYTES(out->signature, xi);
     out->id = share->id;
 
-    mpz_clears(x, r, t1, t2, xi, xi_2, v_prime, x_tilde, x_prime, n, delta, NULL);
+    mpz_clears(x, n, s_i, vk_v, vk_i, delta, xi, xi_2, r, v_prime, x_tilde, x_prime, c, z, NULL);
     return 0;
 }

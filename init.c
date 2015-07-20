@@ -1,13 +1,31 @@
 #include "tc.h"
 #include <stdlib.h>
+#include <stdarg.h>
+
+static inline void clear_bytes(bytes_t * bytes) {
+    free(bytes->data);
+}
+
+static inline void clear_bytes_n(bytes_t * bytes, ...) {
+    va_list ap;
+    va_start(ap, bytes);
+    
+    clear_bytes(bytes);
+
+    bytes_t * cur_arg;
+    while((cur_arg = va_arg(ap, bytes_t *)) != NULL) {
+       clear_bytes(cur_arg);
+    }
+
+    va_end(ap);
+}
 
 public_key_t * tc_init_public_key(public_key_t * pk) {
-    mpz_inits(pk->n, pk->e, pk->m, NULL);
     return pk;
 }
 
 void tc_clear_public_key(public_key_t * pk) {
-    mpz_clears(pk->n, pk->e, pk->m, NULL);
+    clear_bytes_n(&pk->e, &pk->m, &pk->n, NULL);
 }
 
 key_meta_info_t * tc_init_key_meta_info(key_meta_info_t * metainfo, int bit_size, int k, int l) {
@@ -15,8 +33,8 @@ key_meta_info_t * tc_init_key_meta_info(key_meta_info_t * metainfo, int bit_size
     metainfo->k = k;
     metainfo->l = l;
 
-    metainfo->public_key = malloc(sizeof(public_key_t));
-    tc_init_public_key(metainfo->public_key);
+    metainfo->public_key = tc_init_public_key(malloc(sizeof(public_key_t)));
+    metainfo->vk_i = malloc(l * sizeof(bytes_t));
     return metainfo;
 }
 
@@ -24,27 +42,23 @@ void tc_clear_key_meta_info(key_meta_info_t * info) {
     tc_clear_public_key(info->public_key);
     free(info->public_key);
 
-    mpz_clears(info->vk_v, NULL);
+    clear_bytes(&info->vk_v);
     for (int i=0; i<info->l; i++) {
-        mpz_clear(info->vk_i[i]);
+        clear_bytes(&info->vk_i[i]);
     }
     free(info->vk_i);
 }
 
 key_share_t * tc_init_key_share(key_share_t * share) {
-    mpz_inits(share->s_i, share->n, NULL);
     return share;
 }
 
 key_share_t * tc_init_key_shares(key_share_t * shares, key_meta_info_t * info) {
-    for(int i=0; i<info->l; i++) {
-        tc_init_key_share(shares+i);
-    }
     return shares;
 }
 
 void tc_clear_key_share(key_share_t * share) { 
-    mpz_clears(share->s_i, share->n, NULL);
+    clear_bytes_n(&share->s_i, &share->n, NULL);
 }
 
 void tc_clear_key_shares(key_share_t * shares, key_meta_info_t * info){
@@ -55,11 +69,10 @@ void tc_clear_key_shares(key_share_t * shares, key_meta_info_t * info){
 }
 
 signature_share_t * tc_init_signature_share(signature_share_t * ss) {
-    mpz_inits(ss->signature, ss->c, ss->z, NULL);
     return ss;
 }
 
 void tc_clear_signature_share(signature_share_t * ss) {
-    mpz_clears(ss->signature, ss->c, ss->z, NULL);
+    clear_bytes_n(&ss->signature, &ss->c, &ss->z, NULL);
 }
 

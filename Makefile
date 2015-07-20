@@ -1,7 +1,7 @@
 CC=clang
-CFLAGS=-std=c11 -Wall -g -O0
+CFLAGS=-std=c11 -Wall -g -O0 
 EXTRACFLAGS=
-LDFLAGS=-lgmp -lcheck -lmhash -lnettle -lhogweed
+LDFLAGS=-lgmp -lcheck -lmhash -lnettle -lhogweed 
 EXTRALDFLAGS=
 RANLIB=ranlib
 

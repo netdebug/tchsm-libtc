@@ -29,9 +29,11 @@ void generate_safe_prime(mpz_t out, int bit_len, random_fn random) {
     mpz_clears(p,q,r,t1,NULL);
 }
 
-static void generate_group_verifier(key_meta_info_t * info, mpz_t n) {
-    mpz_t rand, d, j;
-    mpz_inits(info->vk_v, rand, d, j, NULL);
+static void generate_group_verifier(key_meta_info_t * info) {
+    mpz_t vk_v, rand, d, j, n;
+    mpz_inits(vk_v, rand, d, j, n, NULL);
+
+    TC_BYTES_TO_MPZ(n, info->public_key->n);
 
     /* Calculate v */
     do {
@@ -39,37 +41,47 @@ static void generate_group_verifier(key_meta_info_t * info, mpz_t n) {
         mpz_gcd(d, rand, n);
     } while(mpz_cmp_ui(d, 1) != 0);
 
-    mpz_powm_ui(info->vk_v, rand, 2, n);
+    mpz_powm_ui(vk_v, rand, 2, n);
 
-    mpz_clears(rand, d, j, NULL);
-
+    TC_MPZ_TO_BYTES(info->vk_v, vk_v);
+    
+    mpz_clears(vk_v, rand, d, j, n, NULL);
 }
 
 /* Have to be used after group verifier generation */
-static void generate_share_verifiers(key_meta_info_t * info, const key_share_t * shares) {
-    info->vk_i = malloc(info->l * sizeof(*(info->vk_i)));
+static void generate_share_verifiers(const key_share_t * shares, key_meta_info_t * info) {
+    mpz_t vk_v, s_i, vk_i, n;
+    mpz_inits(vk_v, s_i, vk_i, n, NULL);
+    TC_BYTES_TO_MPZ(vk_v, info->vk_v);
+    TC_BYTES_TO_MPZ(n, info->public_key->n);
     for (int i=0; i<info->l; i++) {
-        mpz_init(info->vk_i[i]);
-        mpz_powm(info->vk_i[i], info->vk_v, shares[i].s_i, shares[i].n);
+        TC_BYTES_TO_MPZ(s_i, shares[i].s_i);
+        mpz_powm(vk_i, vk_v, s_i, n);
+        TC_MPZ_TO_BYTES(info->vk_i[i], vk_i);
     }
+    mpz_clears(vk_v, s_i, vk_i, n, NULL);
 }
 
-static void generate_key_shares(key_share_t * shares, const key_meta_info_t * info, mpz_t n, mpz_t a0, mpz_t m){ 
+static void generate_key_shares(key_share_t * shares, const key_meta_info_t * info, mpz_t a0){ 
     int i; 
-    mpz_t t1;
-    mpz_init(t1);
+    mpz_t t1, s_i, n, m;
+    mpz_inits(t1, s_i, n, m, NULL);
+
+    TC_BYTES_TO_MPZ(n, info->public_key->n);
+    TC_BYTES_TO_MPZ(m, info->public_key->m);
 
     poly_t * poly = create_random_poly(a0, info->k - 1, m);
 
     for(i=1; i<=info->l; i++) {
         shares[TC_ID_TO_INDEX(i)].id = i;
         poly_eval_ui(t1, poly, i);
-        mpz_mod(shares[TC_ID_TO_INDEX(i)].s_i, t1, m);
-        mpz_set(shares[TC_ID_TO_INDEX(i)].n, n);
+        mpz_mod(s_i, t1, m);
+        TC_MPZ_TO_BYTES(shares[TC_ID_TO_INDEX(i)].s_i, s_i);
+        TC_MPZ_TO_BYTES(shares[TC_ID_TO_INDEX(i)].n, n);
     }
 
     clear_poly(poly);
-    mpz_clear(t1);
+    mpz_clears(t1, s_i, n, m, NULL);
 }
 // Generates info->l shares, with a threshold of k.
 
@@ -85,17 +97,17 @@ tc_error_t tc_generate_keys(key_share_t * out, key_meta_info_t * info) {
 
     int prime_size = info->bit_size / 2;
 
-    mpz_t pr, qr, p, q, d, e, l, m, n, t1;
-    mpz_inits(pr, qr, p, q, d, e, l, m, n, t1, NULL);
+    mpz_t pr, qr, p, q, d, e, l, m, n;
+    mpz_inits(pr, qr, p, q, d, e, l, m, n, NULL);
 
     generate_safe_prime(p, prime_size, random_dev);
     generate_safe_prime(q, prime_size, random_dev);
 
-    mpz_sub_ui(t1, p, 1);
-    mpz_fdiv_q_ui(pr, t1, 2);
+    mpz_sub_ui(pr, p, 1);
+    mpz_fdiv_q_ui(pr, pr, 2);
 
-    mpz_sub_ui(t1, q, 1);
-    mpz_fdiv_q_ui(qr, t1, 2);
+    mpz_sub_ui(qr, q, 1);
+    mpz_fdiv_q_ui(qr, qr, 2);
 
     mpz_mul(n, p, q);
     mpz_mul(m, pr, qr);
@@ -107,18 +119,18 @@ tc_error_t tc_generate_keys(key_share_t * out, key_meta_info_t * info) {
         random_prime(e, mpz_sizeinbase(l, 2) + 1, random_dev);        
     }
 
-    mpz_set(info->public_key->n, n);
-    mpz_set(info->public_key->e, e);
-    mpz_set(info->public_key->m, m);
+    TC_MPZ_TO_BYTES(info->public_key->n, n);
+    TC_MPZ_TO_BYTES(info->public_key->e, e);
+    TC_MPZ_TO_BYTES(info->public_key->m, m);
 
     mpz_invert(d, e, m);
 
     // generate info->l shares.
-    generate_key_shares(out, info, n, d, m); 
-    generate_group_verifier(info, n);
-    generate_share_verifiers(info, out);
+    generate_key_shares(out, info, d); 
+    generate_group_verifier(info);
+    generate_share_verifiers(out, info);
 
-    mpz_clears(pr, qr, p, q, d, e, l, m, n, t1, NULL);
+    mpz_clears(pr, qr, p, q, d, e, l, m, n, NULL);
 
     return TC_OK;
 }

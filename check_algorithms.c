@@ -88,40 +88,7 @@ START_TEST(test_verify_invert) {
 }
 END_TEST
 
-START_TEST(test_verify){
-    key_meta_info_t info;
 
-    tc_init_key_meta_info(&info, 512, 3, 5);
-
-    key_share_t shares[info.l];
-    tc_init_key_shares(shares, &info);
-    tc_generate_keys(shares, &info);
-
-    mpz_t doc, signature;
-    mpz_init(signature);
-    mpz_init_set_str(doc, "95951009936565630770613232106413300773619435751148631183701517132539356488156", 10);
-
-    signature_share_t signatures[info.l];
-    for(int i=0; i<info.l; i++) {
-        tc_init_signature_share(signatures + i);
-    }
-
-    for (int i=0; i<info.l; i++) {
-        tc_node_sign(signatures + i, shares + i, doc, &info);
-        int verify = tc_verify_signature(signatures + i, doc, &info);
-        ck_assert(verify);
-    }
-
-    for(int i=0; i<info.l; i++) {
-        tc_clear_signature_share(signatures + i);
-    }
-
-    mpz_clears(doc, signature, NULL);
-
-    tc_clear_key_shares(shares, &info);
-    tc_clear_key_meta_info(&info);
-}
-END_TEST
 
 START_TEST(test_complete_sign){
     key_meta_info_t info;
@@ -131,22 +98,18 @@ START_TEST(test_complete_sign){
     tc_init_key_shares(shares, &info);
     tc_generate_keys(shares, &info);
 
-    mpz_t doc;
-    mpz_t signature;
-    mpz_init(signature);
-    mpz_init(doc);
-
     unsigned char document[] = "Hola mundo";
+
     unsigned char hash[32];
     MHASH sha = mhash_init(MHASH_SHA256);
     mhash(sha, document, 10);
     mhash_deinit(sha, hash);
 
-    int hash_pkcs1_len = TC_OCTET_SIZE(info.public_key->n);
+    size_t hash_pkcs1_len = info.public_key->n.data_len;
     byte hash_pkcs1[hash_pkcs1_len];
     tc_pkcs1_encoding(hash_pkcs1, hash, "SHA-256", hash_pkcs1_len);
 
-    TC_GET_OCTETS(doc, hash_pkcs1_len, hash_pkcs1);
+    bytes_t doc = { hash_pkcs1, hash_pkcs1_len };
 
     signature_share_t ss[info.l];
     signature_share_t * signatures[info.l];
@@ -155,31 +118,36 @@ START_TEST(test_complete_sign){
     }
 
     for (int i=0; i<info.l; i++) {
-        tc_node_sign(signatures[i], shares + i, doc, &info);
-        int verify = tc_verify_signature(signatures[i], doc, &info);
+        tc_node_sign(signatures[i], shares + i, &doc, &info);
+        int verify = tc_verify_signature(signatures[i], &doc, &info);
         ck_assert(verify);
     }
 
-    tc_join_signatures(signature, (void*)signatures, doc, &info);
+    bytes_t signature;
+    tc_join_signatures(&signature, (void*)signatures, &doc, &info);
 
     struct rsa_public_key nettle_pk;
     nettle_rsa_public_key_init(&nettle_pk);
     
-    mpz_set(nettle_pk.n, info.public_key->n);
-    mpz_set(nettle_pk.e, info.public_key->e);
+    TC_BYTES_TO_MPZ(nettle_pk.n, info.public_key->n);
+    TC_BYTES_TO_MPZ(nettle_pk.e, info.public_key->e);
 
+    mpz_t signature_z;
+    mpz_init(signature_z);
+    TC_BYTES_TO_MPZ(signature_z, signature);
     nettle_rsa_public_key_prepare(&nettle_pk);
-    int result = nettle_rsa_sha256_verify_digest(&nettle_pk, hash, signature);
+    int result = nettle_rsa_sha256_verify_digest(&nettle_pk, hash, signature_z);
+
+    mpz_clears(signature_z, NULL);
+    free(signature.data);
 
     ck_assert(result);
 
     nettle_rsa_public_key_clear(&nettle_pk);
-
     for(int i=0; i<info.l; i++) {
         tc_clear_signature_share(signatures[i]);
     }
     tc_clear_key_shares(shares, &info);
-    mpz_clears(doc, signature, NULL);
     tc_clear_key_meta_info(&info);
 }
 END_TEST
@@ -248,7 +216,6 @@ Suite * algorithms_suite(void)
 
     tcase_add_test(tc_core, test_lagrange_interpolation);
     tcase_add_test(tc_core, test_generate_safe_prime);
-    tcase_add_test(tc_core, test_verify);
     tcase_add_test(tc_core, test_verify_invert);
     tcase_add_test(tc_core, test_complete_sign);
     tcase_add_test(tc_core, test_poly_eval);
