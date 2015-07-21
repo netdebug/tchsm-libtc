@@ -1,8 +1,8 @@
-#include <stdlib.h>
-#include <string.h>
-
 #include "tc.h"
 
+#include <stdlib.h>
+#include <string.h>
+#include <mhash.h>
 
 const byte MD2_PKCS_ID[] = {
     0x30, 0x20, 0x30, 0x0C, 0x06, 0x08, 0x2A, 0x86, 0x48, 0x86,
@@ -44,24 +44,24 @@ const byte TIGER_PKCS_ID[] = {
     0x30, 0x29, 0x30, 0x0D, 0x06, 0x09, 0x2B, 0x06, 0x01, 0x04,
     0x01, 0xDA, 0x47, 0x0C, 0x02, 0x05, 0x00, 0x04, 0x18 };
 
-#define ASN1_SEQUENCE 0x10
-#define ASN1_CONSTRUCT
-
-static inline void get_hash_properties(const byte ** id, int * id_len, int * digest_len, const char * hash_str) {
-    if (!strcmp(hash_str, "SHA-256")) {
-        *id_len = sizeof(SHA_256_PKCS_ID);
-        *digest_len = 32;
-        *id = SHA_256_PKCS_ID;
-    } else if (!strcmp(hash_str, "NONE")) {
-        *id_len = 0;
-        *digest_len = -1;
-        *id = NULL;
-    } else { /* ERROR! */
-        abort();
+static inline void get_hash_properties(const byte ** id, int * id_len, int * digest_len, tc_hash_type_t hash_type) {
+    switch(hash_type) {
+        case TC_SHA256:
+            *id_len = sizeof(SHA_256_PKCS_ID);
+            *digest_len = 256/8;
+            *id = SHA_256_PKCS_ID;
+            break;
+        case TC_NONE:
+            *id_len = 0;
+            *digest_len = -1;
+            *id = NULL;
+            break;
+        default:
+            abort();
     }
 }
 
-void tc_pkcs1_encoding(byte * out, const unsigned char * digest, const char * hash_type, int modulus_size) {
+static void tc_pkcs1_encoding(byte * out, const unsigned char * digest, tc_hash_type_t hash_type, int modulus_size) {
     int k = modulus_size;
     const byte * hash_desc;
     int hash_desc_len, digest_len;
@@ -88,4 +88,27 @@ void tc_pkcs1_encoding(byte * out, const unsigned char * digest, const char * ha
     if (digest != NULL) {
         memcpy(p, digest, digest_len);
     }
+}
+
+void tc_prepare_document(bytes_t * out, const bytes_t * doc, tc_hash_type_t hash_type, const key_meta_info_t * metainfo) {
+    out->data_len = metainfo->public_key->n.data_len;
+    out->data = malloc(out->data_len);
+
+    switch(hash_type) {
+        case TC_SHA256:
+            {
+                byte hash[32];
+                MHASH sha = mhash_init(MHASH_SHA256);
+                mhash(sha, doc->data, doc->data_len);
+                mhash_deinit(sha, hash);
+
+                tc_pkcs1_encoding(out->data, hash, TC_SHA256, out->data_len);
+
+            }
+            break;
+        case TC_NONE:
+            tc_pkcs1_encoding(out->data, doc->data, TC_NONE, out->data_len);
+            break;
+    };
+
 }

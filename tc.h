@@ -38,6 +38,8 @@ typedef struct signature_share {
     int id;
 } signature_share_t;
 
+void tc_clear_bytes(bytes_t * bytes);
+void tc_clear_bytes_n(bytes_t * bytes, ...);
 
 key_meta_info_t * tc_init_key_meta_info(key_meta_info_t * metainfo, int bit_size, int k, int l);
 void tc_clear_key_meta_info(key_meta_info_t *);
@@ -51,10 +53,17 @@ void tc_clear_key_share(key_share_t * share);
 
 typedef enum { TC_OK=0 } tc_error_t;
 
+typedef enum {
+    TC_SHA256,
+    TC_NONE
+} tc_hash_type_t;
+
 tc_error_t tc_generate_keys(key_share_t * out, key_meta_info_t * info);
 tc_error_t tc_node_sign(signature_share_t * out, const key_share_t * share, const bytes_t * doc, const key_meta_info_t * info);
 tc_error_t tc_join_signatures(bytes_t * out, const signature_share_t * const * signatures, const bytes_t * document, const key_meta_info_t * info);
 int tc_verify_signature(const signature_share_t * signature, const bytes_t * doc, const key_meta_info_t * info);
-void tc_pkcs1_encoding(byte * out, const unsigned char * digest, const char * hash_type, int modulus_size);
+
+void tc_prepare_document(bytes_t * out, const bytes_t * doc, tc_hash_type_t hash_id, const key_meta_info_t * metainfo);
+
 
 #endif

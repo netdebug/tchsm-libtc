@@ -98,20 +98,12 @@ START_TEST(test_complete_sign){
 
     key_share_t shares[info.l];
     tc_init_key_shares(shares, &info);
+
     tc_generate_keys(shares, &info);
 
-    unsigned char document[] = "Hola mundo";
-
-    unsigned char hash[32];
-    MHASH sha = mhash_init(MHASH_SHA256);
-    mhash(sha, document, 10);
-    mhash_deinit(sha, hash);
-
-    size_t hash_pkcs1_len = info.public_key->n.data_len;
-    byte hash_pkcs1[hash_pkcs1_len];
-    tc_pkcs1_encoding(hash_pkcs1, hash, "SHA-256", hash_pkcs1_len);
-
-    bytes_t doc = { hash_pkcs1, hash_pkcs1_len };
+    bytes_t doc = { (void*) "Hola mundo", 10 };
+    bytes_t doc_pkcs1;
+    tc_prepare_document(&doc_pkcs1, &doc, TC_SHA256, &info);
 
     signature_share_t ss[info.l];
     signature_share_t * signatures[info.l];
@@ -120,13 +112,13 @@ START_TEST(test_complete_sign){
     }
 
     for (int i=0; i<info.l; i++) {
-        tc_node_sign(signatures[i], shares + i, &doc, &info);
-        int verify = tc_verify_signature(signatures[i], &doc, &info);
+        tc_node_sign(signatures[i], shares + i, &doc_pkcs1, &info);
+        int verify = tc_verify_signature(signatures[i], &doc_pkcs1, &info);
         ck_assert(verify);
     }
 
     bytes_t signature;
-    tc_join_signatures(&signature, (void*)signatures, &doc, &info);
+    tc_join_signatures(&signature, (void*)signatures, &doc_pkcs1, &info);
 
     struct rsa_public_key nettle_pk;
     nettle_rsa_public_key_init(&nettle_pk);
@@ -138,6 +130,11 @@ START_TEST(test_complete_sign){
     mpz_init(signature_z);
     TC_BYTES_TO_MPZ(signature_z, signature);
     nettle_rsa_public_key_prepare(&nettle_pk);
+
+    unsigned char hash[32];
+    MHASH sha = mhash_init(MHASH_SHA256);
+    mhash(sha, doc.data, doc.data_len);
+    mhash_deinit(sha, hash);
     int result = nettle_rsa_sha256_verify_digest(&nettle_pk, hash, signature_z);
 
     mpz_clears(signature_z, NULL);
@@ -216,11 +213,11 @@ Suite * algorithms_suite(void)
     /* Core test case */
     tc_core = tcase_create("Core");
 
-    // tcase_add_test(tc_core, test_lagrange_interpolation);
-    // tcase_add_test(tc_core, test_generate_safe_prime);
-    // tcase_add_test(tc_core, test_verify_invert);
-    // tcase_add_test(tc_core, test_poly_eval);
-    // tcase_add_test(tc_core, test_poly_eval_ui);
+    tcase_add_test(tc_core, test_lagrange_interpolation);
+    tcase_add_test(tc_core, test_generate_safe_prime);
+    tcase_add_test(tc_core, test_verify_invert);
+    tcase_add_test(tc_core, test_poly_eval);
+    tcase_add_test(tc_core, test_poly_eval_ui);
     tcase_add_test(tc_core, test_complete_sign);
     suite_add_tcase(s, tc_core);
 
