@@ -9,7 +9,7 @@ int tc_verify_signature(const signature_share_t * signature, const bytes_t * doc
     mpz_t x, xi, z, c, n, vk_v, vk_i, delta, xtilde, xi2, neg_c, v_prime, xi_neg_2c, x_prime, aux;
     mpz_inits(x, xi, z, c, n, vk_v, vk_i, delta, xtilde, xi2, neg_c, v_prime, xi_neg_2c, x_prime, aux, NULL);
     
-    TC_BYTES_TO_MPZ(x, *doc);
+    TC_BYTES_TO_MPZ(x, doc);
     TC_BYTES_TO_MPZ(xi, signature->signature);
     TC_BYTES_TO_MPZ(z, signature->z);
     TC_BYTES_TO_MPZ(c, signature->c);
@@ -17,7 +17,7 @@ int tc_verify_signature(const signature_share_t * signature, const bytes_t * doc
     TC_BYTES_TO_MPZ(vk_v, info->vk_v);
 
     int idx = TC_ID_TO_INDEX(signature->id);
-    TC_BYTES_TO_MPZ(vk_i, info->vk_i[idx]);
+    TC_BYTES_TO_MPZ(vk_i, info->vk_i + idx);
 
     mpz_mod(x, x, n);
     // v

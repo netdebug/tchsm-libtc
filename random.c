@@ -1,8 +1,9 @@
+#include "mathutils.h"
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <assert.h>
-
-#include "mathutils.h"
+#include <gmp.h>
 
 void random_dev(mpz_t rop, int bit_len) {
   assert(bit_len > 0);

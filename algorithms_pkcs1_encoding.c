@@ -1,4 +1,4 @@
-#include "tc.h"
+#include "tc_internal.h"
 
 #include <stdlib.h>
 #include <string.h>
@@ -90,9 +90,10 @@ static void tc_pkcs1_encoding(byte * out, const unsigned char * digest, tc_hash_
     }
 }
 
-void tc_prepare_document(bytes_t * out, const bytes_t * doc, tc_hash_type_t hash_type, const key_meta_info_t * metainfo) {
-    out->data_len = metainfo->public_key->n.data_len;
-    out->data = malloc(out->data_len);
+bytes_t * tc_prepare_document(const bytes_t * doc, tc_hash_type_t hash_type, const key_meta_info_t * metainfo) {
+    size_t data_len = metainfo->public_key->n->data_len;
+    byte * data = malloc(data_len);
+    bytes_t * out = tc_init_bytes(data, data_len);
 
     switch(hash_type) {
         case TC_SHA256:
@@ -110,5 +111,5 @@ void tc_prepare_document(bytes_t * out, const bytes_t * doc, tc_hash_type_t hash
             tc_pkcs1_encoding(out->data, doc->data, TC_NONE, out->data_len);
             break;
     };
-
+    return out;
 }

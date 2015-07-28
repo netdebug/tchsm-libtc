@@ -20,17 +20,18 @@
 
 const unsigned int HASH_LEN = 32; // sha256 => 256 bits => 32 bytes
 
-tc_error_t tc_node_sign(signature_share_t * out, const key_share_t * share, const bytes_t * doc, const key_meta_info_t * info){
+signature_share_t * tc_node_sign(const key_share_t * share, const bytes_t * doc, const key_meta_info_t * info){
+    signature_share_t * out = tc_init_signature_share();
 
     /* ti are temporary variables */
     mpz_t x, n, s_i, vk_v, vk_i, delta, xi, xi_2, r, v_prime, x_tilde, x_prime, c, z;
     mpz_inits(x, n, s_i, vk_v, vk_i, delta, xi, xi_2, r, v_prime, x_tilde, x_prime, c, z, NULL);
 
-    TC_BYTES_TO_MPZ(x, *doc);
+    TC_BYTES_TO_MPZ(x, doc);
     TC_BYTES_TO_MPZ(n, info->public_key->n);
     TC_BYTES_TO_MPZ(s_i, share->s_i);
     TC_BYTES_TO_MPZ(vk_v, info->vk_v);
-    TC_BYTES_TO_MPZ(vk_i, info->vk_i[TC_ID_TO_INDEX(share->id)]);
+    TC_BYTES_TO_MPZ(vk_i, info->vk_i + TC_ID_TO_INDEX(share->id));
     mpz_fac_ui(delta, info->l);
 
     const unsigned long n_bits = mpz_sizeinbase(n, 2); // Bit size of the key.
@@ -106,5 +107,5 @@ tc_error_t tc_node_sign(signature_share_t * out, const key_share_t * share, cons
     out->id = share->id;
 
     mpz_clears(x, n, s_i, vk_v, vk_i, delta, xi, xi_2, r, v_prime, x_tilde, x_prime, c, z, NULL);
-    return 0;
+    return out;
 }

@@ -8,13 +8,35 @@
 #include "tc_internal.h"
 #include "mathutils.h"
 
+#include <stdbool.h>
 #include <gmp.h>
 #include <mhash.h>
 
 #include <check.h>
-#include <nettle/rsa.h>
 
 #include <stdlib.h>
+
+
+bool tc_rsa_verify(bytes_t * signature, bytes_t * doc, key_meta_info_t * info, tc_hash_type_t hashtype) {
+
+	bytes_t * doc_pkcs1 = tc_prepare_document(doc, hashtype, info);
+
+	mpz_t c, x, e, n, new_x;
+	mpz_inits(c, x, e, n, new_x, NULL);
+	TC_BYTES_TO_MPZ(c, signature);
+	TC_BYTES_TO_MPZ(x, doc_pkcs1);
+	TC_BYTES_TO_MPZ(e, info->public_key->e);
+	TC_BYTES_TO_MPZ(n, info->public_key->n);
+
+	mpz_powm(new_x, c, e, n);
+
+	int cmp = mpz_cmp(x, new_x);
+
+	tc_clear_bytes(doc_pkcs1);
+	mpz_clears(c, x, e, n, new_x, NULL);
+
+	return cmp == 0;
+}
 
 void lagrange_interpolation(mpz_t out, int j, int k, const signature_share_t * const * S, mpz_t delta);
 void generate_safe_prime(mpz_t out, int bit_len, random_fn random);
@@ -93,61 +115,32 @@ END_TEST
 
 
 START_TEST(test_complete_sign){
-    key_meta_info_t info;
-    tc_init_key_meta_info(&info, 1024, 3, 5);
+    key_meta_info_t * info;
+    key_share_t ** shares = tc_generate_keys(&info, 1024, 3, 5);
 
-    key_share_t shares[info.l];
-    tc_init_key_shares(shares, &info);
+    const char * message = "Hola mundo";
+    bytes_t * doc = tc_init_bytes((byte *) strdup(message), strlen(message));
+    bytes_t * doc_pkcs1 = tc_prepare_document(doc, TC_SHA256, info);
 
-    tc_generate_keys(shares, &info);
+    signature_share_t * signatures[info->l];
 
-    bytes_t doc = { (void*) "Hola mundo", 10 };
-    bytes_t doc_pkcs1;
-    tc_prepare_document(&doc_pkcs1, &doc, TC_SHA256, &info);
-
-    signature_share_t ss[info.l];
-    signature_share_t * signatures[info.l];
-    for(int i=0; i<info.l; i++) {
-        signatures[i] = tc_init_signature_share( ss + i);
+    for (int i=0; i<info->l; i++) {
+        signatures[i] = tc_node_sign(shares[i], doc_pkcs1, info);
+        bool verify = tc_verify_signature(signatures[i], doc_pkcs1, info);
+        ck_assert_msg(verify, "Signature Share verification.");
     }
 
-    for (int i=0; i<info.l; i++) {
-        tc_node_sign(signatures[i], shares + i, &doc_pkcs1, &info);
-        int verify = tc_verify_signature(signatures[i], &doc_pkcs1, &info);
-        ck_assert(verify);
-    }
+    bytes_t * signature = tc_join_signatures((void*) signatures, doc_pkcs1, info);
 
-    bytes_t signature;
-    tc_join_signatures(&signature, (void*)signatures, &doc_pkcs1, &info);
+    bool verify = tc_rsa_verify(signature, doc, info, TC_SHA256);
+    ck_assert_msg(verify, "RSA Signature verification.");
 
-    struct rsa_public_key nettle_pk;
-    nettle_rsa_public_key_init(&nettle_pk);
-    
-    TC_BYTES_TO_MPZ(nettle_pk.n, info.public_key->n);
-    TC_BYTES_TO_MPZ(nettle_pk.e, info.public_key->e);
-
-    mpz_t signature_z;
-    mpz_init(signature_z);
-    TC_BYTES_TO_MPZ(signature_z, signature);
-    nettle_rsa_public_key_prepare(&nettle_pk);
-
-    unsigned char hash[32];
-    MHASH sha = mhash_init(MHASH_SHA256);
-    mhash(sha, doc.data, doc.data_len);
-    mhash_deinit(sha, hash);
-    int result = nettle_rsa_sha256_verify_digest(&nettle_pk, hash, signature_z);
-
-    mpz_clears(signature_z, NULL);
-    free(signature.data);
-
-    ck_assert(result);
-
-    nettle_rsa_public_key_clear(&nettle_pk);
-    for(int i=0; i<info.l; i++) {
+    tc_clear_bytes(signature);
+    for(int i=0; i<info->l; i++) {
         tc_clear_signature_share(signatures[i]);
     }
-    tc_clear_key_shares(shares, &info);
-    tc_clear_key_meta_info(&info);
+    tc_clear_key_shares(shares, info);
+    tc_clear_key_meta_info(info);
 }
 END_TEST
 

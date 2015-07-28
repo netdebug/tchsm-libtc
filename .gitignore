@@ -5,3 +5,4 @@ tags
 check_algorithms
 .gdbinit
 .ycm_extra_conf.pyc
+main.c

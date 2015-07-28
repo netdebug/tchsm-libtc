@@ -1,11 +1,11 @@
 CC=clang
 CFLAGS=-std=c11 -Wall -g
 EXTRACFLAGS=
-LDFLAGS=-lgmp -lcheck -lmhash -lnettle -lhogweed 
+LDFLAGS=-lcheck -lmhash -lgmp
 EXTRALDFLAGS=
 RANLIB=ranlib
 
-EXE=check_algorithms
+EXE=check_algorithms main
 OBJ_LIB=libtc.a
 OBJ=poly.o random.o init.o algorithms_generate_keys.o algorithms_join_signatures.o algorithms_node_sign.o algorithms_verify_signature.o algorithms_pkcs1_encoding.o
 DEPS=%.h
