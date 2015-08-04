@@ -1,5 +1,4 @@
 #include "mathutils.h"
-
 #include <stdlib.h>
 #include <assert.h>
 

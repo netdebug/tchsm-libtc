@@ -56,6 +56,7 @@ key_share_t ** tc_generate_keys(key_meta_info_t ** out, int bit_size, int k, int
 signature_share_t * tc_node_sign(const key_share_t * share, const bytes_t * doc, const key_meta_info_t * info);
 bytes_t * tc_join_signatures(const signature_share_t ** signatures, const bytes_t * document, const key_meta_info_t * info);
 int tc_verify_signature(const signature_share_t * signature, const bytes_t * doc, const key_meta_info_t * info);
+int tc_rsa_verify(bytes_t * signature, bytes_t * doc, key_meta_info_t * info, tc_hash_type_t hashtype);
 bytes_t * tc_prepare_document(const bytes_t * doc, tc_hash_type_t hash_type, const key_meta_info_t * metainfo);
 
 void tc_clear_bytes(bytes_t * bytes);

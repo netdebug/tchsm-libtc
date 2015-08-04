@@ -1,5 +1,4 @@
-#include "tc_internal.h"
-
+#include "tc.h"
 #include <stdlib.h>
 #include <stdarg.h>
 

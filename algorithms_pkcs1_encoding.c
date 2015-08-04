@@ -1,5 +1,4 @@
 #include "tc_internal.h"
-
 #include <stdlib.h>
 #include <string.h>
 #include <mhash.h>
@@ -53,7 +52,7 @@ static inline void get_hash_properties(const byte ** id, int * id_len, int * dig
             break;
         case TC_NONE:
             *id_len = 0;
-            *digest_len = -1;
+            *digest_len = 0;
             *id = NULL;
             break;
         default:
@@ -61,17 +60,20 @@ static inline void get_hash_properties(const byte ** id, int * id_len, int * dig
     }
 }
 
-static void tc_pkcs1_encoding(byte * out, const unsigned char * digest, tc_hash_type_t hash_type, int modulus_size) {
-    int k = modulus_size;
+static void tc_pkcs1_encoding(bytes_t * out, bytes_t * digest, tc_hash_type_t hash_type) {
+    int k = out->data_len;
     const byte * hash_desc;
     int hash_desc_len, digest_len;
 
     get_hash_properties(&hash_desc, &hash_desc_len, &digest_len, hash_type);
 
+    assert(digest->data_len <= digest_len);
+
     int D_len = digest_len + hash_desc_len;
     int P_len = k - 3 - D_len;
 
-    byte * p = out;
+    byte * p = out->data;
+
     /* PKCS1 padding */
     *p++ = 0x00;
     *p++ = 0x01;
@@ -85,16 +87,14 @@ static void tc_pkcs1_encoding(byte * out, const unsigned char * digest, tc_hash_
 
     p += hash_desc_len;
 
-    if (digest != NULL) {
-        memcpy(p, digest, digest_len);
-    }
+	memcpy(p, digest->data, digest->data_len);
 }
 
 bytes_t * tc_prepare_document(const bytes_t * doc, tc_hash_type_t hash_type, const key_meta_info_t * metainfo) {
     size_t data_len = metainfo->public_key->n->data_len;
-    byte * data = malloc(data_len);
-    bytes_t * out = tc_init_bytes(data, data_len);
 
+    bytes_t * out = tc_init_bytes(malloc(data_len), data_len);
+    bytes_t digest;
     switch(hash_type) {
         case TC_SHA256:
             {
@@ -103,13 +103,20 @@ bytes_t * tc_prepare_document(const bytes_t * doc, tc_hash_type_t hash_type, con
                 mhash(sha, doc->data, doc->data_len);
                 mhash_deinit(sha, hash);
 
-                tc_pkcs1_encoding(out->data, hash, TC_SHA256, out->data_len);
-
+                digest.data = hash;
+                digest.data_len = 32;
             }
             break;
         case TC_NONE:
-            tc_pkcs1_encoding(out->data, doc->data, TC_NONE, out->data_len);
-            break;
+        	{
+				digest.data = doc->data;
+				digest.data_len = doc->data_len;
+        	}
+        	break;
+
     };
+
+    assert(digest.data_len <= data_len);
+    tc_pkcs1_encoding(out, &digest, hash_type);
     return out;
 }

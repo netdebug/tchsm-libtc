@@ -1,6 +1,4 @@
-#include "tc.h"
 #include "tc_internal.h"
-
 #include <mhash.h>
 
 extern const unsigned int HASH_LEN; /* Defined somewhere :P */

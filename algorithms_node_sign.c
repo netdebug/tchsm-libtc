@@ -1,6 +1,4 @@
-#include "tc.h"
 #include "tc_internal.h"
-
 #include "mathutils.h"
 #include <mhash.h>
 

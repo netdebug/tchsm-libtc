@@ -1,5 +1,4 @@
 #include "tc_internal.h"
-
 #include "mathutils.h"
 
 #include <assert.h>
