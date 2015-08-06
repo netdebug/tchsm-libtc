@@ -1,7 +1,7 @@
 CC=clang
 CFLAGS=-std=c11 -Wall -g
 EXTRACFLAGS=
-LDFLAGS=-lcheck -lmhash -lgmp
+LDFLAGS=-lcheck -lmhash -lgmp -lm -lpthread -lrt
 EXTRALDFLAGS=
 RANLIB=ranlib
 
@@ -14,14 +14,14 @@ OBJ=poly.o random.o init.o algorithms_generate_keys.o \
 DEPS=%.h
 
 all: $(OBJ_LIB) $(EXE)
- 
+
 libtc.a: $(OBJ)
 	$(AR) $(ARFLAGS) $@ $?
 	$(RANLIB) $@
 
-check_algorithms: $(OBJ) check_algorithms.o 
+check_algorithms: $(OBJ) check_algorithms.o
 	$(CC) -o $@ $^ $(LDFLAGS)
-	
+
 main: $(OBJ) main.o
 	$(CC) -o $@ $^ -lgmp -lmhash
 
@@ -30,6 +30,6 @@ check: check_algorithms
 
 %.o: %.c $(DEPS)
 	$(CC) -c -o $@ $< $(CFLAGS)
-	
+
 clean:
 	rm *.o check_algorithms libtc.a
