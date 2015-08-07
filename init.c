@@ -21,9 +21,6 @@ void tc_clear_bytes(bytes_t * bytes) {
 }
 
 static void tc_clear_bytes_array(bytes_t * b, int count) {
-#ifdef __CPROVER__
-    __CPROVER_assume(count < 100);
-#endif 
     for(int i=0; i<count; i++) {
         free(b[i].data);
     }
