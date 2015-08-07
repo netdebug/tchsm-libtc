@@ -61,7 +61,7 @@ main: main.o $(LIB_FILE)
 	$(CC) -o $@ $^ $(LDFLAGS)
 
 check: check_algorithms
-	$(shell ./$^)
+	./$^
 
 %.o: %.c $(DEPS)
 	$(CC) -c -o $@ $< $(CFLAGS)
