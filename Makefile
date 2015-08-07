@@ -65,6 +65,6 @@ check: check_algorithms
 
 %.o: %.c $(DEPS)
 	$(CC) -c -o $@ $< $(CFLAGS)
-	
+
 clean:
 	$(RM) $(LIB_FILE) $(LIB_OBJ) $(EXE)
