@@ -6,3 +6,4 @@ check_algorithms
 .gdbinit
 .ycm_extra_conf.pyc
 main
+check.xml
