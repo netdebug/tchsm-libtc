@@ -1,7 +1,7 @@
-CFLAGS = -std=c11 -Wall -g
-LDFLAGS = -lmhash -lgmp
+CFLAGS += -std=c11 -Wall -g
+LDFLAGS += -lmhash -lgmp
 
-CC = clang
+CC ?= clang
 AR = ar
 RM = rm -f
 RANLIB = ranlib
@@ -29,6 +29,12 @@ LIB_OBJ += algorithms_node_sign.o
 LIB_OBJ += algorithms_verify_signature.o
 LIB_OBJ += algorithms_pkcs1_encoding.o
 LIB_OBJ += algorithms_rsa_verify.o
+
+ifdef DEBUG
+    CFLAGS += -Wall -Werror -g -O0
+else
+    CFLAGS += -O3
+endif
 
 ifndef NO_CHECK
     EXE += check_algorithms 
@@ -66,5 +72,6 @@ check: check_algorithms
 %.o: %.c $(DEPS)
 	$(CC) -c -o $@ $< $(CFLAGS)
 
+.PHONY: clean
 clean:
 	$(RM) $(LIB_FILE) $(LIB_OBJ) $(EXE)
