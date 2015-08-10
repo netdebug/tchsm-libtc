@@ -1,6 +1,8 @@
 #include "tc.h"
 #include <stdlib.h>
 #include <stdarg.h>
+#include <stdio.h>
+#include <assert.h>
 
 static void * alloc(size_t size) {
 	void * b = malloc(size);
@@ -67,9 +69,9 @@ void tc_clear_public_key(public_key_t * pk) {
 
 key_meta_info_t * tc_init_key_meta_info(int bit_size, int k, int l) {
 
-    assert(512 <= bit_size &*& bit_size <= 8192, "Bit size limits");
-    assert(0 < l, "l is positive");
-    assert(l/2 < k && k <= l, "k is between l/2 and l");
+    assert(512 <= bit_size &*& bit_size <= 8192);
+    assert(0 < l);
+    assert(l/2 < k && k <= l);
 
     key_meta_info_t * metainfo = alloc(sizeof(key_meta_info_t));
 
