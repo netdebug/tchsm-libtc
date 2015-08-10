@@ -29,6 +29,7 @@ LIB_OBJ += algorithms_node_sign.o
 LIB_OBJ += algorithms_verify_signature.o
 LIB_OBJ += algorithms_pkcs1_encoding.o
 LIB_OBJ += algorithms_rsa_verify.o
+LIB_OBJ += algorithms_base64.o
 
 ifdef DEBUG
     CFLAGS += -Wall -Werror -g -O0
@@ -37,13 +38,14 @@ else
 endif
 
 ifndef NO_CHECK
-    EXE += check_algorithms 
+    EXE += check_algorithms
 endif
 
 EXE += main
 
 ifeq ($(UNAME_S),Linux)
     LDFLAGS += -lm
+    CHECK_LDFLAGS += -lrt -lpthread
 endif
 ifeq ($(UNAME_S),Darwin)
     ifeq ($(shell test -d /opt/local/lib && echo y),y)
@@ -61,7 +63,7 @@ $(LIB_FILE): $(LIB_OBJ)
 $(LIB_OBJ): $(LIB_H)
 
 check_algorithms: check_algorithms.o $(LIB_FILE) 
-	$(CC) -o $@ $^ $(LDFLAGS) -lcheck -lrt -lpthread
+	$(CC) -o $@ $^ $(LDFLAGS) $(CHECK_LDFLAGS)
 
 main: main.o $(LIB_FILE)
 	$(CC) -o $@ $^ $(LDFLAGS)
@@ -69,7 +71,7 @@ main: main.o $(LIB_FILE)
 check: check_algorithms
 	./$^
 
-%.o: %.c $(DEPS)
+%.o: %.c
 	$(CC) -c -o $@ $< $(CFLAGS)
 
 .PHONY: clean

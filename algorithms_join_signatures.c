@@ -18,6 +18,15 @@ void lagrange_interpolation(mpz_t out, int j, int k, const signature_share_t ** 
 * @param info a pointer to the meta info of the key set
 */
 bytes_t * tc_join_signatures(const signature_share_t ** signatures, const bytes_t * document, const key_meta_info_t * info) {
+	assert(signatures != NULL);
+#ifndef NDEBUG
+	for(int i=0; i<info->k; i++){
+		assert(signatures[i] != NULL);
+	}
+#endif
+	assert(document != NULL && document->data != NULL);
+	assert(info != NULL);
+
     bytes_t * out = tc_init_bytes(NULL, 0);
 
     mpz_t x, n, e, delta, e_prime, w, s_i, lambda_k_2, aux, a, b, wa, xb, y;
@@ -59,6 +68,8 @@ bytes_t * tc_join_signatures(const signature_share_t ** signatures, const bytes_
     TC_MPZ_TO_BYTES(out, y);
 
     mpz_clears(x, n, e, delta, e_prime, w, s_i, lambda_k_2, aux, a, b, wa, xb, y, NULL);
+
+    assert(out != NULL && out->data != NULL);
     return out;
 }
 

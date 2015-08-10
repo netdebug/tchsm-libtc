@@ -2,8 +2,9 @@
 #define TC_H
 
 #include <stddef.h> // for size_t
+#include <inttypes.h>
 
-typedef unsigned char byte;
+typedef uint8_t byte;
 
 struct bytes {
     byte * data;
@@ -52,6 +53,8 @@ enum tc_hash_type {
 typedef enum tc_hash_type tc_hash_type_t;
 
 bytes_t * tc_init_bytes(byte * bs, size_t len);
+char * tc_bytes_b64(const bytes_t * b);
+bytes_t * tc_b64_bytes(const char * b);
 key_share_t ** tc_generate_keys(key_meta_info_t ** out, int bit_size, int k, int ll);
 signature_share_t * tc_node_sign(const key_share_t * share, const bytes_t * doc, const key_meta_info_t * info);
 bytes_t * tc_join_signatures(const signature_share_t ** signatures, const bytes_t * document, const key_meta_info_t * info);

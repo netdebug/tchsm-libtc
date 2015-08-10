@@ -13,8 +13,9 @@
 #define TC_MPZ_TO_BYTES(bytes, z) \
     do { bytes_t * b = (bytes); b->data = TC_TO_OCTETS(&b->data_len, z); } while(0)
 #define TC_BYTES_TO_MPZ(z, bytes) \
-    do { const bytes_t * b = (bytes); TC_GET_OCTETS(z, b->data_len, b->data); } while(0)
+    do { const bytes_t * __b = (bytes); mpz_import(z, __b->data_len, 1, 1, 0, 0, __b->data); } while(0)
 
+void * alloc(size_t size);
 bytes_t * tc_init_bytes(byte * bs, size_t len);
 public_key_t * tc_init_public_key();
 key_meta_info_t * tc_init_key_meta_info(int bit_size, int k, int l) ;
