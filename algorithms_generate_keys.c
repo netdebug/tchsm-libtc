@@ -100,7 +100,6 @@ key_share_t ** tc_generate_keys(key_meta_info_t ** out, int bit_size, int k, int
 
 	/* Preconditions */
 	assert(out != NULL);
-	assert(*out != NULL);
 	assert(bit_size >= 512 && bit_size <= 8192);
 	assert(0 < k);
 	assert(k <= ll);

@@ -1,4 +1,4 @@
-CFLAGS = -std=c11 -Wall -g
+CFLAGS = -std=c11 -Wall -g -O0
 LDFLAGS = -lmhash -lgmp
 
 CC = clang
@@ -29,6 +29,7 @@ LIB_OBJ += algorithms_node_sign.o
 LIB_OBJ += algorithms_verify_signature.o
 LIB_OBJ += algorithms_pkcs1_encoding.o
 LIB_OBJ += algorithms_rsa_verify.o
+LIB_OBJ += algorithms_base64.o
 
 CHECK_LDFLAGS= -lcheck
 ifndef NO_CHECK

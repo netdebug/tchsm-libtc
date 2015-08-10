@@ -70,7 +70,7 @@ signature_share_t * tc_node_sign(const key_share_t * share, const bytes_t * doc,
 
     // Initialization of the digest context
 
-    unsigned char * hash = malloc(HASH_LEN);
+    unsigned char * hash = alloc(HASH_LEN);
     MHASH sha = mhash_init(MHASH_SHA256);
 
     mhash(sha, v_bytes, v_len);

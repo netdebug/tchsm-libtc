@@ -4,7 +4,7 @@
 #include <stdio.h>
 #include <assert.h>
 
-static void * alloc(size_t size) {
+void * alloc(size_t size) {
 	void * b = malloc(size);
 	if (b == NULL) {
 		perror("alloc");
