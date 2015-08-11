@@ -35,16 +35,18 @@ ifdef PROFILE
     CFLAGS += -pg
     LDFLAGS += -pg
 endif
+ifdef NO_CHECK
+	CFLAGS += -DNO_CHECK
+else
 ifdef DEBUG
-    CFLAGS += -Wall -Werror -g -O0
+    CFLAGS += -g -O0
 else
     CFLAGS += -O3
 endif
 
-ifndef NO_CHECK
     EXE += check_algorithms
-    CHECK_LDFLAGS += $(LDFLAGS) $(shell pkg-config --libs check)
-    CHECK_CFLAGS += $(CFLAGS) $(shell pkg-config --cflags check)
+    CFLAGS += $(shell pkg-config --cflags check)
+    LDFLAGS += $(shell pkg-config --libs check) 
 endif
 
 EXE += main
@@ -68,13 +70,15 @@ $(LIB_FILE): $(LIB_OBJ)
 $(LIB_OBJ): $(LIB_H)
 
 check_algorithms: check_algorithms.o $(LIB_FILE) 
-	$(CC) -o $@ $^ $(CHECK_LDFLAGS)
-
+	$(CC) -o $@ $^ $(LDFLAGS) 
+	
 main: main.o $(LIB_FILE)
 	$(CC) -o $@ $^ $(LDFLAGS)
 
+ifndef NO_CHECK
 check: check_algorithms
 	./$^
+endif
 
 %.o: %.c
 	$(CC) -c -o $@ $< $(CFLAGS)
