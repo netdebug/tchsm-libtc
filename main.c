@@ -49,9 +49,7 @@ int main(int argc, char ** argv)
     key_meta_info_t * info;
     key_share_t ** shares = tc_generate_keys(&info, 512, k, l);
 
-    const char * message = "Hola mundo";
-
-    bytes_t * doc = tc_init_bytes((byte *) strdup(message), strlen(message));
+    bytes_t * doc = tc_init_bytes( (byte*)message, strlen(message));
     bytes_t * doc_pkcs1 = tc_prepare_document(doc, TC_SHA256, info);
 
     b64 = tc_bytes_b64(doc_pkcs1);
@@ -75,6 +73,7 @@ int main(int argc, char ** argv)
     free(b64);
 
 
+    tc_clear_bytes_n(doc, doc_pkcs1, NULL);
     tc_clear_bytes(signature);
     for(int i=0; i<info->l; i++) {
         tc_clear_signature_share(signatures[i]);

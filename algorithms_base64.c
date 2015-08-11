@@ -147,7 +147,7 @@ char *tc_bytes_b64(const bytes_t * b) {
 bytes_t * tc_b64_bytes(const char *b64){
 	size_t b64_len = strlen(b64);
 
-	size_t b_len;
+	size_t b_len = 0;
 	uint8_t * b = b64_decode(b64, b64_len, &b_len);
 
 	return tc_init_bytes(b, b_len);

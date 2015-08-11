@@ -1,4 +1,4 @@
-CFLAGS += -std=c11 -Wall -g
+CFLAGS += -std=c11 -Wall -Werror
 LDFLAGS += -lmhash -lgmp
 
 CC ?= clang
@@ -31,6 +31,10 @@ LIB_OBJ += algorithms_pkcs1_encoding.o
 LIB_OBJ += algorithms_rsa_verify.o
 LIB_OBJ += algorithms_base64.o
 
+ifdef PROFILE
+    CFLAGS += -pg
+    LDFLAGS += -pg
+endif
 ifdef DEBUG
     CFLAGS += -Wall -Werror -g -O0
 else
@@ -39,13 +43,14 @@ endif
 
 ifndef NO_CHECK
     EXE += check_algorithms
+    CHECK_LDFLAGS += $(LDFLAGS) $(shell pkg-config --libs check)
+    CHECK_CFLAGS += $(CFLAGS) $(shell pkg-config --cflags check)
 endif
 
 EXE += main
 
 ifeq ($(UNAME_S),Linux)
     LDFLAGS += -lm
-    CHECK_LDFLAGS += -lrt -lpthread
 endif
 ifeq ($(UNAME_S),Darwin)
     ifeq ($(shell test -d /opt/local/lib && echo y),y)
@@ -63,7 +68,7 @@ $(LIB_FILE): $(LIB_OBJ)
 $(LIB_OBJ): $(LIB_H)
 
 check_algorithms: check_algorithms.o $(LIB_FILE) 
-	$(CC) -o $@ $^ $(LDFLAGS) $(CHECK_LDFLAGS)
+	$(CC) -o $@ $^ $(CHECK_LDFLAGS)
 
 main: main.o $(LIB_FILE)
 	$(CC) -o $@ $^ $(LDFLAGS)
@@ -76,4 +81,4 @@ check: check_algorithms
 
 .PHONY: clean
 clean:
-	$(RM) $(LIB_FILE) $(LIB_OBJ) $(EXE)
+	$(RM) $(LIB_FILE) $(LIB_OBJ) $(EXE) main.o

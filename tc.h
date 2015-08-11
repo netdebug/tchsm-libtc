@@ -2,7 +2,7 @@
 #define TC_H
 
 #include <stddef.h> // for size_t
-#include <inttypes.h>
+#include <stdint.h>
 
 typedef uint8_t byte;
 

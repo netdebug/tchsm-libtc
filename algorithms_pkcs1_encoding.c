@@ -82,12 +82,12 @@ static void tc_pkcs1_encoding(bytes_t * out, bytes_t * digest, tc_hash_type_t ha
     *p++ = 0x00;
 
     if (hash_desc != NULL) { // ASN.1
-       memcpy(p, hash_desc, hash_desc_len);
+        memcpy(p, hash_desc, hash_desc_len);
     }
 
     p += hash_desc_len;
 
-	memcpy(p, digest->data, digest->data_len);
+    memcpy(p, digest->data, digest->data_len);
 }
 
 bytes_t * tc_prepare_document(const bytes_t * doc, tc_hash_type_t hash_type, const key_meta_info_t * metainfo) {
@@ -108,12 +108,13 @@ bytes_t * tc_prepare_document(const bytes_t * doc, tc_hash_type_t hash_type, con
             }
             break;
         case TC_NONE:
-        	{
-				digest.data = doc->data;
-				digest.data_len = doc->data_len;
-        	}
-        	break;
-
+            {
+                digest.data = doc->data;
+                digest.data_len = doc->data_len;
+            }
+            break;
+        default:
+            abort();
     };
 
     assert(digest.data_len <= data_len);
