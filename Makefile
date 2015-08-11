@@ -32,15 +32,18 @@ LIB_OBJ += algorithms_rsa_verify.o
 LIB_OBJ += algorithms_base64.o
 
 CHECK_LDFLAGS= -lcheck
-ifndef NO_CHECK
+ifdef NO_CHECK
+	CFLAGS += -DNO_CHECK
+else
     EXE += check_algorithms
+    CFLAGS += $(shell pkg-config --cflags check)
+    LDFLAGS += $(shell pkg-config --libs check) 
 endif
 
 EXE += main
 
 ifeq ($(UNAME_S),Linux)
     LDFLAGS += -lm
-    CHECK_LDFLAGS += -lrt -lpthread
 endif
 ifeq ($(UNAME_S),Darwin)
     ifeq ($(shell test -d /opt/local/lib && echo y),y)
@@ -58,13 +61,15 @@ $(LIB_FILE): $(LIB_OBJ)
 $(LIB_OBJ): $(LIB_H)
 
 check_algorithms: check_algorithms.o $(LIB_FILE) 
-	$(CC) -o $@ $^ $(LDFLAGS) $(CHECK_LDFLAGS)
-
+	$(CC) -o $@ $^ $(LDFLAGS) 
+	
 main: main.o $(LIB_FILE)
 	$(CC) -o $@ $^ $(LDFLAGS)
 
+ifndef NO_CHECK
 check: check_algorithms
 	./$^
+endif
 
 %.o: %.c
 	$(CC) -c -o $@ $< $(CFLAGS)

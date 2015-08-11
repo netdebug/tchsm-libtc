@@ -1,12 +1,11 @@
 /***
- * Unit and functional tests.
- *
- * Generally we only test correct cases.
+ * Unit and integration tests.
  * TODO: We need to test failure cases.
  */
 #include "tc.h"
 #include "tc_internal.h"
 #include "mathutils.h"
+#include "unit_test.h"
 
 #include <stdbool.h>
 #include <gmp.h>
@@ -15,82 +14,6 @@
 #include <check.h>
 
 #include <stdlib.h>
-
-void lagrange_interpolation(mpz_t out, int j, int k, const signature_share_t * const * S, mpz_t delta);
-void generate_safe_prime(mpz_t out, int bit_len, random_fn random);
-
-START_TEST(test_lagrange_interpolation){
-    const int k = 5;
-    mpz_t out, delta;
-    mpz_inits(out, delta, NULL);
-
-    signature_share_t SS[] = {
-        {.id = 1},
-        {.id = 2},
-        {.id = 3},
-        {.id = 4},
-        {.id = 5}   
-    };
-    signature_share_t const* S[] = { SS, SS+1, SS+2, SS+3, SS+4 };
-
-    mpz_fac_ui(delta, k);
-
-
-    lagrange_interpolation(out, 1, k,  S, delta);
-    ck_assert(mpz_cmp_si(out, 600) == 0);
-    lagrange_interpolation(out, 2, k, S, delta);
-    ck_assert(mpz_cmp_si(out, -1200) == 0);
-    lagrange_interpolation(out, 3, k, S, delta);
-    ck_assert(mpz_cmp_si(out, 1200) == 0);
-    lagrange_interpolation(out, 4, k, S, delta);
-    ck_assert(mpz_cmp_si(out, -600) == 0);
-    lagrange_interpolation(out, 5, k, S, delta);
-    ck_assert(mpz_cmp_si(out, 120) == 0);
-
-    mpz_clears(out, delta, NULL);
-}
-END_TEST
-
-START_TEST(test_generate_safe_prime) {
-    mpz_t p, q;
-    mpz_inits(p,q,NULL);
-    generate_safe_prime(p, 512, random_dev);
-    mpz_sub_ui(q, p, 1);
-    mpz_fdiv_q_ui(q, q, 2);
-
-    ck_assert(mpz_probab_prime_p(p, 25));
-    ck_assert(mpz_probab_prime_p(q, 25));
-    mpz_clears(p,q,NULL);
-}
-END_TEST
-
-START_TEST(test_verify_invert) {
-    mpz_t p, q, p_, q_, m, e, d, r;
-    mpz_inits(p,q, p_, q_, m, e, d, r, NULL);
-    generate_safe_prime(p, 512, random_dev);
-    generate_safe_prime(q, 512, random_dev);
-
-    mpz_sub_ui(p_, p, 1);
-    mpz_fdiv_q_ui(p_, p_, 2);
-    mpz_sub_ui(q_, q, 1);
-    mpz_fdiv_q_ui(q_, q_, 2);
-
-    mpz_mul(m, p_, q_);
-
-    mpz_set_ui(e, 65537);
-
-    mpz_invert(d, e, m);
-
-    mpz_mul(r, d, e);
-    mpz_mod(r, r, m);
-
-    ck_assert(mpz_cmp_si(r, 1) == 0);
-
-    mpz_clears(p,q, p_, q_, m, e, d, r, NULL);
-}
-END_TEST
-
-
 
 START_TEST(test_complete_sign){
     key_meta_info_t * info;
@@ -122,58 +45,6 @@ START_TEST(test_complete_sign){
 }
 END_TEST
 
-START_TEST(test_poly_eval){
-    // Easy cases.
-    mpz_t coeffs[10];
-    mpz_t x, res, y;
-    mpz_inits(x, res, y, NULL);
-    for(int i=0; i<10; i++){
-        mpz_init_set_ui(coeffs[i], 1);
-    }
-    poly_t p = {.coeff = coeffs, .size=10};
-
-    mpz_set_ui(x, 1);
-    poly_eval(res, &p, x);
-    ck_assert(mpz_cmp_ui(res, 10) == 0);
-
-    mpz_set_ui(x, 10);
-
-    mpz_set_str(y, "1111111111", 0);
-    poly_eval(res, &p, x);
-    ck_assert(mpz_cmp(res, y) == 0);
-
-    mpz_set_ui(x, 0);
-    poly_eval(res, &p, x);
-    ck_assert(mpz_cmp_ui(res, 1) == 0);
-}
-END_TEST
-
-START_TEST(test_poly_eval_ui){
-    // Easy cases.
-    mpz_t res,y;
-    mpz_inits(res,y,NULL);
-
-    mpz_t coeffs[10];
-    for(int i=0; i<10; i++){
-        mpz_init_set_ui(coeffs[i], 1);
-    }
-
-    poly_t p = {.coeff = coeffs, .size=10};
-
-    poly_eval_ui(res, &p, 1);
-    ck_assert(mpz_cmp_si(res, 10) == 0);
-
-    mpz_set_str(y, "1111111111", 0);
-    poly_eval_ui(res, &p, 10);
-    ck_assert(mpz_cmp(res, y) == 0);
-
-    poly_eval_ui(res, &p, 0);
-    ck_assert(mpz_cmp_si(res, 1) == 0);
-    mpz_clears(res,y,NULL);
-}
-END_TEST
-
-
 Suite * algorithms_suite(void)
 {
     Suite *s;
@@ -182,17 +53,14 @@ Suite * algorithms_suite(void)
     s = suite_create("Algorithms");
 
     /* Core test case */
-    tc_core = tcase_create("Core");
-
-    tcase_add_test(tc_core, test_lagrange_interpolation);
-    tcase_add_test(tc_core, test_generate_safe_prime);
-    tcase_add_test(tc_core, test_verify_invert);
-    tcase_add_test(tc_core, test_poly_eval);
-    tcase_add_test(tc_core, test_poly_eval_ui);
+    tc_core = tcase_create("Integration");
     tcase_add_test(tc_core, test_complete_sign);
+    tcase_set_timeout(tc_core, 240);
     suite_add_tcase(s, tc_core);
 
-    tcase_set_timeout(tc_core, 240);
+    suite_add_tcase(s, tc_test_case_algorithms_generate_keys_c());
+    suite_add_tcase(s, tc_test_case_algorithms_join_signatures_c());
+    suite_add_tcase(s, tc_test_case_poly_c());
 
     return s;
 }
