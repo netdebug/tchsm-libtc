@@ -1,8 +1,38 @@
 #ifndef TC_INTERNAL_H
 # define TC_INTERNAL_H
 
-#include <gmp.h>
+#include <stddef.h>
+
 #include "tc.h"
+
+struct public_key {
+    bytes_t * n;
+    bytes_t * m;
+    bytes_t * e;
+};
+
+struct key_meta_info {
+    public_key_t * public_key;
+    int bit_size;
+    int k;
+    int l;
+    bytes_t * vk_v;
+    bytes_t * vk_i;
+};
+
+struct key_share {
+    bytes_t * s_i;
+    bytes_t * n;
+    int id;
+};
+
+struct signature_share {
+    bytes_t * signature;
+    bytes_t * c;
+    bytes_t * z;
+    int id;
+};
+
 
 #define TC_OCTET_SIZE(z) ((mpz_sizeinbase(z, 2) + 7) / 8)
 #define TC_GET_OCTETS(z, bcount, op) mpz_import(z, bcount, 1, 1, 0, 0, op)

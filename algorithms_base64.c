@@ -19,12 +19,12 @@
  * THE SOFTWARE. 
  */
 
-#include <string.h>
-#include <stdbool.h>
-#include <ctype.h>
-#include <stdlib.h>
 #include <assert.h>
+#include <stdint.h>
+#include <stdlib.h>
+#include <string.h>
 
+#include "tc.h"
 #include "tc_internal.h"
 
 static const char lookup_table[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";

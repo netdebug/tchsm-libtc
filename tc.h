@@ -2,50 +2,20 @@
 #define TC_H
 
 #include <stddef.h> // for size_t
-#include <stdint.h>
+#include <stdint.h> // for uint8_t
 
 typedef uint8_t byte;
-
 struct bytes {
     byte * data;
     size_t data_len;
 };
 typedef struct bytes bytes_t;
 
-struct public_key {
-    bytes_t * n;
-    bytes_t * m;
-    bytes_t * e;
-};
 typedef struct public_key public_key_t;
-
-struct key_meta_info {
-    public_key_t * public_key;
-    int bit_size;
-    int k;
-    int l;
-    bytes_t * vk_v;
-    bytes_t * vk_i;
-};
 typedef struct key_meta_info key_meta_info_t;
-
-struct key_share {
-    bytes_t * s_i;
-    bytes_t * n;
-    int id;
-};
-typedef struct key_share key_share_t; 
-
-struct signature_share {
-    bytes_t * signature;
-    bytes_t * c;
-    bytes_t * z;
-    int id;
-};
+typedef struct key_share key_share_t;
 typedef struct signature_share signature_share_t;
 
-enum tc_error { TC_OK=0 };
-typedef enum tc_error tc_error_t;
 enum tc_hash_type {
     TC_SHA256,
     TC_NONE

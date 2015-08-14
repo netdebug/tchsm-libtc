@@ -1,8 +1,9 @@
-#include "tc.h"
-#include <stdlib.h>
+#include <assert.h>
 #include <stdarg.h>
 #include <stdio.h>
-#include <assert.h>
+#include <stdlib.h>
+
+#include "tc_internal.h"
 
 void * alloc(size_t size) {
 	void * b = malloc(size);

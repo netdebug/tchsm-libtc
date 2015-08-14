@@ -1,6 +1,8 @@
-#include "mathutils.h"
-#include <stdlib.h>
 #include <assert.h>
+#include <gmp.h>
+#include <stdlib.h>
+
+#include "mathutils.h"
 
 /** GMP-based polynomial library **/
 

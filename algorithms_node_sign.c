@@ -1,6 +1,11 @@
-#include "tc_internal.h"
-#include "mathutils.h"
+#include <gmp.h>
 #include <mhash.h>
+#include <stddef.h>
+#include <stdlib.h>
+
+#include "mathutils.h"
+#include "tc.h"
+#include "tc_internal.h"
 
 /*
   Signs the document with the nodes share.

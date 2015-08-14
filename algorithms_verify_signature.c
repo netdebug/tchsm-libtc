@@ -1,5 +1,9 @@
-#include "tc_internal.h"
+#include <gmp.h>
 #include <mhash.h>
+#include <stdio.h>
+
+#include "tc.h"
+#include "tc_internal.h"
 
 extern const unsigned int HASH_LEN; /* Defined somewhere :P */
 

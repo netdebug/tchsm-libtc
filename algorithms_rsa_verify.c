@@ -4,9 +4,12 @@
  *  Created on: 28-07-2015
  *      Author: franchoco
  */
-#include "tc_internal.h"
+
 #include <gmp.h>
 #include <stdlib.h>
+
+#include "tc.h"
+#include "tc_internal.h"
 
 int tc_rsa_verify(bytes_t * signature, bytes_t * doc, key_meta_info_t * info, tc_hash_type_t hashtype) {
 

@@ -56,9 +56,9 @@ int main(int argc, char ** argv)
     printf("Document: %s\n", b64);
     free(b64);
 
-    signature_share_t * signatures[info->l];
+    signature_share_t * signatures[l];
 
-    for (int i=0; i<info->l; i++) {
+    for (int i=0; i<l; i++) {
         signatures[i] = tc_node_sign(shares[i], doc_pkcs1, info);
         int verify = tc_verify_signature(signatures[i], doc_pkcs1, info);
         assert(verify);
@@ -75,7 +75,7 @@ int main(int argc, char ** argv)
 
     tc_clear_bytes_n(doc, doc_pkcs1, NULL);
     tc_clear_bytes(signature);
-    for(int i=0; i<info->l; i++) {
+    for(int i=0; i<l; i++) {
         tc_clear_signature_share(signatures[i]);
     }
     tc_clear_key_shares(shares, info);

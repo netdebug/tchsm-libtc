@@ -1,7 +1,9 @@
-#include "tc_internal.h"
+#include <assert.h>
+#include <mhash.h>
 #include <stdlib.h>
 #include <string.h>
-#include <mhash.h>
+
+#include "tc_internal.h"
 
 const byte MD2_PKCS_ID[] = {
     0x30, 0x20, 0x30, 0x0C, 0x06, 0x08, 0x2A, 0x86, 0x48, 0x86,

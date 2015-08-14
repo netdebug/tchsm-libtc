@@ -45,8 +45,8 @@ else
 endif
 
     EXE += check_algorithms
-    CFLAGS += $(shell pkg-config --cflags check)
-    LDFLAGS += $(shell pkg-config --libs check) 
+    CFLAGS += #$(shell pkg-config --cflags check)
+    LDFLAGS += -lcheck #$(shell pkg-config --libs check) 
 endif
 
 EXE += main
