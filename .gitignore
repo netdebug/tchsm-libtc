@@ -7,3 +7,6 @@ check_algorithms
 .ycm_extra_conf.pyc
 main
 check.xml
+.cproject
+.project
+.settings

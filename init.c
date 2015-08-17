@@ -63,6 +63,7 @@ public_key_t * tc_init_public_key() {
     return pk;
 }
 
+
 void tc_clear_public_key(public_key_t * pk) {
     tc_clear_bytes_n(pk->e, pk->m, pk->n, NULL);
     free(pk);
@@ -86,6 +87,34 @@ key_meta_info_t * tc_init_key_meta_info(int bit_size, int k, int l) {
 
     assert(metainfo != NULL);
     return metainfo;
+}
+
+int tc_key_meta_info_k(const key_meta_info_t *i) {
+    return i->k;
+}
+
+int tc_key_meta_info_l(const key_meta_info_t *i) {
+    return i->l;
+}
+
+const public_key_t *tc_key_meta_info_public_key(const key_meta_info_t *i) {
+    return i->public_key;
+}
+
+int tc_key_share_id(const key_share_t *k) {
+    return k->id;
+}
+
+const bytes_t * tc_public_key_n(const public_key_t *pk) {
+    return pk->n;
+}
+
+const bytes_t * tc_public_key_e(const public_key_t *pk) {
+    return pk->e;
+}
+
+int tc_signature_share_id(const signature_share_t *s) {
+    return s->id;
 }
 
 void tc_clear_key_meta_info(key_meta_info_t * info) {

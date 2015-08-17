@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.2)
-project(tclib)
+project(tc)
 
 set(CMAKE_PREFIX_PATH "/opt/local")
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c11")
