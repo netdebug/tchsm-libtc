@@ -23,7 +23,7 @@ START_TEST(test_complete_sign){
     key_share_t ** shares = tc_generate_keys(&info, 1024, 3, 5);
 
     const char * message = "Hola mundo";
-    bytes_t * doc = tc_init_bytes((byte *) strdup(message), strlen(message));
+    bytes_t * doc = tc_init_bytes(strdup(message), strlen(message));
     bytes_t * doc_pkcs1 = tc_prepare_document(doc, TC_SHA256, info);
 
     signature_share_t * signatures[info->l];
@@ -58,7 +58,7 @@ Suite * algorithms_suite(void)
     /* Core test case */
     tc_core = tcase_create("Integration");
     tcase_add_test(tc_core, test_complete_sign);
-    tcase_set_timeout(tc_core, 240);
+    tcase_set_timeout(tc_core, 320);
     suite_add_tcase(s, tc_core);
 
     suite_add_tcase(s, tc_test_case_algorithms_generate_keys_c());

@@ -13,9 +13,8 @@ struct public_key {
 
 struct key_meta_info {
     public_key_t * public_key;
-    int bit_size;
-    int k;
-    int l;
+    uint16_t k;
+    uint16_t l;
     bytes_t * vk_v;
     bytes_t * vk_i;
 };
@@ -23,14 +22,14 @@ struct key_meta_info {
 struct key_share {
     bytes_t * s_i;
     bytes_t * n;
-    int id;
+    uint16_t id;
 };
 
 struct signature_share {
     bytes_t * signature;
     bytes_t * c;
     bytes_t * z;
-    int id;
+    uint16_t id;
 };
 
 
@@ -46,9 +45,8 @@ struct signature_share {
     do { const bytes_t * __b = (bytes); mpz_import(z, __b->data_len, 1, 1, 0, 0, __b->data); } while(0)
 
 void *alloc(size_t size);
-bytes_t *tc_init_bytes(byte *bs, size_t len);
 public_key_t *tc_init_public_key();
-key_meta_info_t *tc_init_key_meta_info(int bit_size, int k, int l) ;
+key_meta_info_t *tc_init_key_meta_info(size_t bit_size, uint16_t k, uint16_t l) ;
 signature_share_t *tc_init_signature_share();
 key_share_t *tc_init_key_share();
 key_share_t **tc_init_key_shares(key_meta_info_t *info);

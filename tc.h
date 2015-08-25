@@ -4,9 +4,8 @@
 #include <stddef.h> // for size_t
 #include <stdint.h> // for uint8_t
 
-typedef uint8_t byte;
 struct bytes {
-    byte * data;
+    void *data;
     size_t data_len;
 };
 typedef struct bytes bytes_t;
@@ -24,8 +23,26 @@ typedef enum tc_hash_type tc_hash_type_t;
 
 
 /* Operations & Constructors */
-bytes_t *tc_init_bytes(byte *bs, size_t len);
-key_share_t **tc_generate_keys(key_meta_info_t **out, int bit_size, int k, int ll);
+
+
+/**
+ * @ param bs pointer to data
+ * @ param len data stored in len
+ *
+ * @ return a new bytes_t structure that stores bs with its len
+ */
+bytes_t *tc_init_bytes(void *bs, size_t len);
+
+/**
+ *
+ * @ param out stores the corresponding key_meta_info to the key_share lists.
+ * @ param bit_size the bit_size of the returned key_shares
+ * @ param k the number of nodes needed to sign
+ * @ param ll the number of nodes
+ *
+ * @ result a key_share array of ll items or NULL under error condition.
+ */
+key_share_t **tc_generate_keys(key_meta_info_t **out, size_t bit_size, uint16_t k, uint16_t ll);
 signature_share_t *tc_node_sign(const key_share_t *share, const bytes_t *doc, const key_meta_info_t *info);
 bytes_t *tc_join_signatures(const signature_share_t **signatures, const bytes_t *document, const key_meta_info_t *info);
 int tc_verify_signature(const signature_share_t *signature, const bytes_t *doc, const key_meta_info_t *info);

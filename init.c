@@ -14,7 +14,7 @@ void * alloc(size_t size) {
 	return b;
 }
 
-bytes_t * tc_init_bytes(byte * bs, size_t len) {
+bytes_t * tc_init_bytes(void * bs, size_t len) {
     bytes_t * out = alloc(sizeof(bytes_t));
     out->data = bs;
     out->data_len = len;
@@ -69,7 +69,7 @@ void tc_clear_public_key(public_key_t * pk) {
     free(pk);
 }
 
-key_meta_info_t * tc_init_key_meta_info(int bit_size, int k, int l) {
+key_meta_info_t * tc_init_key_meta_info(size_t bit_size, uint16_t k, uint16_t l) {
 
     assert(512 <= bit_size && bit_size <= 8192);
     assert(0 < l);
@@ -77,7 +77,6 @@ key_meta_info_t * tc_init_key_meta_info(int bit_size, int k, int l) {
 
     key_meta_info_t * metainfo = alloc(sizeof(key_meta_info_t));
 
-    metainfo->bit_size = bit_size;
     metainfo->k = k;
     metainfo->l = l;
 

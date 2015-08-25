@@ -96,7 +96,7 @@ static void generate_key_shares(key_share_t ** shares, const key_meta_info_t * i
  * \param info a pointer to the meta info of the key set to be generated
  * \param public_key a pointer to a initialized but not defined public_key
  */
-key_share_t ** tc_generate_keys(key_meta_info_t ** out, int bit_size, int k, int ll){
+key_share_t ** tc_generate_keys(key_meta_info_t ** out, size_t bit_size, uint16_t k, uint16_t ll){
 
 	/* Preconditions */
 	assert(out != NULL);
@@ -176,8 +176,8 @@ END_TEST
 START_TEST(test_verify_invert) {
     mpz_t p, q, p_, q_, m, e, d, r;
     mpz_inits(p,q, p_, q_, m, e, d, r, NULL);
-    generate_safe_prime(p, 512, random_dev);
-    generate_safe_prime(q, 512, random_dev);
+    generate_safe_prime(p, 256, random_dev);
+    generate_safe_prime(q, 256, random_dev);
 
     mpz_sub_ui(p_, p, 1);
     mpz_fdiv_q_ui(p_, p_, 2);
