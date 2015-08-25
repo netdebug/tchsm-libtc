@@ -8,34 +8,16 @@ include(FindGMP)
 include(FindMHASH)
 include(FindCheck)
 
-find_package(GMP)
+find_package(GMP REQUIRED)
 message("gmp include ${GMP_INCLUDE_DIR}")
 include_directories(${GMP_INCLUDE_DIRS})
 
-find_package(MHASH)
+find_package(MHASH REQUIRED)
 include_directories(${MHASH_INCLUDE_DIR})
 
-find_package(Check)
+find_package(Check REQUIRED)
 include_directories(${CHECK_INCLUDE_DIRS})
 link_directories(${CHECK_LIBRARY_DIRS})
-
-# if (GMP_FOUND)
-#     include_directories(${GMP_INCLUDE_DIRS})
-# else()
-#     message(FATAL_ERROR "Cannot find GMP")
-# endif()
-#
-# if (MHASH_FOUND)
-#     include_directories(${MHASH_INCLUDE_DIRS})
-# else()
-#     message(FATAL_ERROR "Cannot find GMP")
-# endif()
-#
-# if (Check_FOUND)
-#     include_directories(${Check_INCLUDE_DIRS})
-# else()
-#    message(FATAL_ERROR "Cannot find GMP")
-#endif()
 
 set(SOURCE_FILES
     algorithms_base64.c

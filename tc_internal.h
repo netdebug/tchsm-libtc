@@ -45,12 +45,12 @@ struct signature_share {
 #define TC_BYTES_TO_MPZ(z, bytes) \
     do { const bytes_t * __b = (bytes); mpz_import(z, __b->data_len, 1, 1, 0, 0, __b->data); } while(0)
 
-void * alloc(size_t size);
-bytes_t * tc_init_bytes(byte * bs, size_t len);
-public_key_t * tc_init_public_key();
-key_meta_info_t * tc_init_key_meta_info(int bit_size, int k, int l) ;
-signature_share_t * tc_init_signature_share();
-key_share_t * tc_init_key_share();
-key_share_t ** tc_init_key_shares(key_meta_info_t * info);
+void *alloc(size_t size);
+bytes_t *tc_init_bytes(byte *bs, size_t len);
+public_key_t *tc_init_public_key();
+key_meta_info_t *tc_init_key_meta_info(int bit_size, int k, int l) ;
+signature_share_t *tc_init_signature_share();
+key_share_t *tc_init_key_share();
+key_share_t **tc_init_key_shares(key_meta_info_t *info);
 
 #endif
