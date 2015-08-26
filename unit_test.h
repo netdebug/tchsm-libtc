@@ -4,4 +4,5 @@ typedef struct TCase TCase;
 TCase * tc_test_case_algorithms_generate_keys_c();
 TCase * tc_test_case_algorithms_join_signatures_c();
 TCase * tc_test_case_poly_c();
+TCase *tc_test_case_serialization();
 #endif

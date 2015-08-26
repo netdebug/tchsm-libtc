@@ -77,8 +77,6 @@ static char *b64_encode (const uint8_t * buffer, size_t len )
 }
 
 static size_t b64_length(const char *input, size_t len) {
-    assert(len % 4 != 0);
-
     size_t padding =
     		input[len-2] == pad? 2 :
     		input[len-1] == pad? 1 : 0;

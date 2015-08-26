@@ -36,7 +36,7 @@ set(SOURCE_FILES
     tc_internal.h
     unit_test.h)
 
-add_library(tc SHARED ${SOURCE_FILES} )
+add_library(tc STATIC ${SOURCE_FILES} )
 message(tc ${GMP_LIBRARIES} ${MHASH_LIBRARIES} ${CHECK_LIBRARIES})
 target_link_libraries(tc ${GMP_LIBRARIES} ${MHASH_LIBRARIES} ${CHECK_LIBRARIES})
 

@@ -56,14 +56,15 @@ Suite * algorithms_suite(void)
     s = suite_create("Algorithms");
 
     /* Core test case */
-    tc_core = tcase_create("Integration");
-    tcase_add_test(tc_core, test_complete_sign);
-    tcase_set_timeout(tc_core, 320);
-    suite_add_tcase(s, tc_core);
+    // tc_core = tcase_create("System test");
+    // tcase_add_test(tc_core, test_complete_sign);
+    // tcase_set_timeout(tc_core, 320);
+    // suite_add_tcase(s, tc_core);
 
-    suite_add_tcase(s, tc_test_case_algorithms_generate_keys_c());
-    suite_add_tcase(s, tc_test_case_algorithms_join_signatures_c());
-    suite_add_tcase(s, tc_test_case_poly_c());
+    // suite_add_tcase(s, tc_test_case_algorithms_generate_keys_c());
+    // suite_add_tcase(s, tc_test_case_algorithms_join_signatures_c());
+    // suite_add_tcase(s, tc_test_case_poly_c());
+    suite_add_tcase(s, tc_test_case_serialization());
 
     return s;
 }

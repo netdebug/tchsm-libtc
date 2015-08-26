@@ -26,7 +26,7 @@ char *tc_serialize_key_share(const key_share_t *ks) {
 
     /* We prepare the buffer */
     size_t buffer_size = sizeof(net_version) + sizeof(net_id) + sizeof(ks->n->data_len) +
-            sizeof(ks->s_i->data_len) + ks->n->data_len + ks->s_i->data_len;
+                         sizeof(ks->s_i->data_len) + ks->n->data_len + ks->s_i->data_len;
     void *buffer = malloc(buffer_size);
 
     /* Copy each field to the buffer */
@@ -50,8 +50,8 @@ char *tc_serialize_signature_share(const signature_share_t *ss) {
     uint16_t net_id = htons(ss->id);
 
     size_t buffer_size = sizeof(net_version) + sizeof(net_id) + sizeof(ss->x_i->data_len) +
-            sizeof(ss->c->data_len) + sizeof(ss->z->data_len) + ss->x_i->data_len + ss->c->data_len +
-            ss->z->data_len;
+                         sizeof(ss->c->data_len) + sizeof(ss->z->data_len) + ss->x_i->data_len + ss->c->data_len +
+                         ss->z->data_len;
     void *buffer = malloc(buffer_size);
 
     void *p = buffer;
@@ -69,7 +69,7 @@ char *tc_serialize_signature_share(const signature_share_t *ss) {
 
 static bytes_t *serialize_public_key(const public_key_t *pk) {
     size_t buffer_size = sizeof(pk->n->data_len) + sizeof(pk->e->data_len) + sizeof(pk->m->data_len) +
-            pk->n->data_len + pk->m->data_len + pk->e->data_len;
+                         pk->n->data_len + pk->m->data_len + pk->e->data_len;
     void *buffer = malloc(buffer_size);
 
 
@@ -101,11 +101,11 @@ char *tc_serialize_key_metainfo(const key_metainfo_t *kmi) {
     bytes_t *vk_v = kmi->vk_v;
     buffer_size += vk_v->data_len;
 
-    for (int i=0; i < kmi->l; i++) {
+    for (int i = 0; i < kmi->l; i++) {
         buffer_size += kmi->vk_i[i].data_len;
     }
 
-    void *buffer = malloc(buffer_size);
+    uint8_t *buffer = malloc(buffer_size);
     void *p = buffer;
 
     SERIALIZE_VARIABLE(p, net_version);
@@ -113,8 +113,9 @@ char *tc_serialize_key_metainfo(const key_metainfo_t *kmi) {
     SERIALIZE_VARIABLE(p, net_k);
     SERIALIZE_VARIABLE(p, net_l);
     SERIALIZE_BYTES(p, vk_v);
-    for (int i=0; i<kmi->l; i++) {
-        SERIALIZE_BYTES(p, kmi->vk_i + i);
+    for (int i = 0; i < kmi->l; i++) {
+        bytes_t *v = &kmi->vk_i[i];
+        SERIALIZE_BYTES(p, v);
     }
 
     bytes_t bs = {buffer, buffer_size};
@@ -129,7 +130,7 @@ char *tc_serialize_key_metainfo(const key_metainfo_t *kmi) {
 
 #define DESERIALIZE_BYTES(dst, buf) \
     do { uint32_t len; memcpy(&len, buf, sizeof(len)); len = ntohl(len); buf += sizeof(len);\
-     bytes_t * b = (dst) = tc_init_bytes(alloc(len), len); memcpy(b->data, buf, len); \
+     bytes_t * b = (dst); b->data = alloc(len); b->data_len = len; memcpy(b->data, buf, len); \
      buf += len; } while(0)
 
 key_share_t *tc_deserialize_key_share(const char *b64) {
@@ -139,19 +140,11 @@ key_share_t *tc_deserialize_key_share(const char *b64) {
     uint16_t version;
     DESERIALIZE_SHORT(version, p);
 
-    uint16_t id;
-    DESERIALIZE_SHORT(id, p);
-
-    bytes_t *n;
-    DESERIALIZE_BYTES(n, p);
-
-    bytes_t *s_i;
-    DESERIALIZE_BYTES(s_i, p);
-
     key_share_t *ks = tc_init_key_share();
-    ks->id = id;
-    ks->n = n;
-    ks->s_i = s_i;
+
+    DESERIALIZE_SHORT(ks->id, p);
+    DESERIALIZE_BYTES(ks->n, p);
+    DESERIALIZE_BYTES(ks->s_i, p);
 
     tc_clear_bytes(buffer);
 
@@ -160,29 +153,17 @@ key_share_t *tc_deserialize_key_share(const char *b64) {
 
 signature_share_t *tc_deserialize_signature_share(const char *b64) {
     bytes_t *buffer = tc_b64_bytes(b64);
-    void *p = buffer;
+    void *p = buffer->data;
 
 
     uint16_t version;
     DESERIALIZE_SHORT(version, p);
 
-    uint16_t id;
-    DESERIALIZE_SHORT(id, p);
-
-    bytes_t *x_i;
-    DESERIALIZE_BYTES(x_i, p);
-
-    bytes_t *c;
-    DESERIALIZE_BYTES(c, p);
-
-    bytes_t *z;
-    DESERIALIZE_BYTES(z, p);
-
     signature_share_t *ss = tc_init_signature_share();
-    ss->id = id;
-    ss->x_i = x_i;
-    ss->c = c;
-    ss->z = z;
+    DESERIALIZE_SHORT(ss->id, p);
+    DESERIALIZE_BYTES(ss->x_i, p);
+    DESERIALIZE_BYTES(ss->c, p);
+    DESERIALIZE_BYTES(ss->z, p);
 
     tc_clear_bytes(buffer);
 
@@ -191,12 +172,12 @@ signature_share_t *tc_deserialize_signature_share(const char *b64) {
 
 key_metainfo_t *tc_deserialize_key_metainfo(const char *b64) {
     bytes_t *buffer = tc_b64_bytes(b64);
-    void *p =buffer;
+    void *p = buffer->data;
 
     uint16_t version;
     DESERIALIZE_SHORT(version, p);
 
-    bytes_t *pk;
+    bytes_t *pk = tc_init_bytes(NULL, 0);
     DESERIALIZE_BYTES(pk, p);
 
     uint16_t k;
@@ -205,33 +186,104 @@ key_metainfo_t *tc_deserialize_key_metainfo(const char *b64) {
     uint16_t l;
     DESERIALIZE_SHORT(l, p);
 
-    bytes_t *vk_v;
-    DESERIALIZE_BYTES(vk_v, p);
-
-    key_metainfo_t * kmi = tc_init_key_meta_info(0, k, l);
+    key_metainfo_t *kmi = tc_init_key_metainfo(k, l);
+    DESERIALIZE_BYTES(kmi->vk_v, p);
     // We have to do this here, because init_key_meta_info initializes the vk_i array.
-    for(int i=0; i<l; i++){
+    for (int i = 0; i < l; i++) {
         bytes_t *v = kmi->vk_i + i;
-        DESERIALIZE_BYTES(v, p);
+        DESERIALIZE_BYTES(kmi->vk_i + i, p);
     }
-
     p = pk->data;
-    bytes_t *n;
-    DESERIALIZE_BYTES(n, p);
-
-    bytes_t *e;
-    DESERIALIZE_BYTES(e, p);
-
-    bytes_t *m;
-    DESERIALIZE_BYTES(m, p);
-
-    kmi->public_key->n = n;
-    kmi->public_key->e = e;
-    kmi->public_key->m = m;
-    kmi->k = k;
-    kmi->l = l;
-    kmi->vk_v = vk_v;
+    DESERIALIZE_BYTES(kmi->public_key->n, p);
+    DESERIALIZE_BYTES(kmi->public_key->e, p);
+    DESERIALIZE_BYTES(kmi->public_key->m, p);
 
     tc_clear_bytes(buffer);
     return kmi;
 }
+
+
+#ifndef NO_CHECK
+
+#include <check.h>
+#include <stdio.h>
+
+static int bytes_eq(bytes_t *a, bytes_t *b) {
+    return (a->data_len == b->data_len) &&
+            (memcmp(a->data, b->data, a->data_len) == 0);
+}
+
+START_TEST(test_serialization_key_share)
+    {
+        key_metainfo_t *info;
+        key_share_t **shares = tc_generate_keys(&info, 512, 3, 5);
+
+        char *share0_b64 = tc_serialize_key_share(shares[0]);
+
+        key_share_t *share0 = tc_deserialize_key_share(share0_b64);
+
+        ck_assert(shares[0]->id == share0->id);
+        ck_assert(bytes_eq(shares[0]->n, share0->n));
+        ck_assert(bytes_eq(shares[0]->s_i, share0->s_i));
+    }
+END_TEST
+
+START_TEST(test_serialization_signature_share)
+    {
+        key_metainfo_t *info;
+        key_share_t **shares = tc_generate_keys(&info, 512, 3, 5);
+
+        const char *message = "Hola mundo";
+        bytes_t *doc = tc_init_bytes(strdup(message), strlen(message));
+        bytes_t *doc_pkcs1 = tc_prepare_document(doc, TC_SHA256, info);
+
+        signature_share_t *s = tc_node_sign(shares[0], doc_pkcs1, info);
+
+        char *signature_b64 = tc_serialize_signature_share(s);
+        signature_share_t *new_s = tc_deserialize_signature_share(signature_b64);
+
+        ck_assert(s->id == new_s->id);
+        ck_assert(bytes_eq(s->c, new_s->c));
+        ck_assert(bytes_eq(s->x_i, new_s->x_i));
+        ck_assert(bytes_eq(s->z, new_s->z));
+    }
+END_TEST
+START_TEST(test_serialization_key_metainfo)
+    {
+        // TODO: Make this pass...
+        key_metainfo_t *mi;
+        key_share_t **shares = tc_generate_keys(&mi, 512, 4, 7);
+
+        char *mi_b64 = tc_serialize_key_metainfo(mi);
+        key_metainfo_t *new_mi = tc_deserialize_key_metainfo(mi_b64);
+
+        ck_assert(mi->k == new_mi->k);
+        ck_assert(mi->l == new_mi->l);
+        ck_assert(bytes_eq(mi->public_key->n, new_mi->public_key->n));
+        ck_assert(bytes_eq(mi->public_key->m, new_mi->public_key->m));
+        ck_assert(bytes_eq(mi->public_key->e, new_mi->public_key->e));
+        ck_assert(bytes_eq(mi->vk_v, new_mi->vk_v));
+        for(int i=0; i<mi->l; i++) {
+            bytes_t * a = mi->vk_i + i;
+            bytes_t * b = new_mi->vk_i + i;
+
+            for (int i = 0; i < a->data_len; i++) { printf("%02x ", ((uint8_t*)a->data)[i]); }
+            printf("\n");
+            for (int i = 0; i < b->data_len; i++) { printf("%02x ", ((uint8_t*)b->data)[i]); }
+            printf("\ni=%d\n a == b? : %d\n", i, bytes_eq(a,b));
+
+            ck_assert(bytes_eq(a, b));
+        }
+    }
+END_TEST
+
+
+TCase *tc_test_case_serialization() {
+    TCase *tc = tcase_create("poly.c");
+    tcase_add_test(tc, test_serialization_key_share);
+    tcase_add_test(tc, test_serialization_signature_share);
+    tcase_add_test(tc, test_serialization_key_metainfo);
+    return tc;
+}
+
+#endif

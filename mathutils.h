@@ -2,6 +2,7 @@
 #define MATHUTILS_H
 
 #include <gmp.h>
+#include <_types/_uint32_t.h>
 
 typedef void (*random_fn)(mpz_t rop, int bit_len);
 
@@ -13,7 +14,7 @@ typedef struct poly {
   int size;
 } poly_t;
 
-poly_t * create_random_poly(mpz_t d, int size, mpz_t m);
+poly_t * create_random_poly(mpz_t d, size_t size, mpz_t m);
 void clear_poly(poly_t * poly);
 void poly_eval(mpz_t rop, poly_t * poly, mpz_t op);
 void poly_eval_ui(mpz_t rop, poly_t * poly, unsigned long op);

@@ -38,13 +38,13 @@ struct signature_share {
 #define TC_ID_TO_INDEX(id) (id-1)
 
 #define TC_MPZ_TO_BYTES(bytes, z) \
-    do { bytes_t * b = (bytes); b->data = TC_TO_OCTETS(&b->data_len, z); } while(0)
+    do { bytes_t * b = (bytes); size_t * len = (size_t*)&b->data_len; b->data = TC_TO_OCTETS(len, z); } while(0)
 #define TC_BYTES_TO_MPZ(z, bytes) \
-    do { const bytes_t * __b = (bytes); mpz_import(z, __b->data_len, 1, 1, 0, 0, __b->data); } while(0)
+    do { const bytes_t * __b = (bytes); size_t len = __b->data_len; mpz_import(z, len, 1, 1, 0, 0, __b->data); } while(0)
 
 void *alloc(size_t size);
 public_key_t *tc_init_public_key();
-key_metainfo_t *tc_init_key_meta_info(size_t bit_size, uint16_t k, uint16_t l) ;
+key_metainfo_t *tc_init_key_metainfo(uint16_t k, uint16_t l);
 signature_share_t *tc_init_signature_share();
 key_share_t *tc_init_key_share();
 key_share_t **tc_init_key_shares(key_metainfo_t *info);

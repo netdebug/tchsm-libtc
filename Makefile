@@ -22,7 +22,7 @@ LIB_H += tc_internal.h
 
 LIB_OBJ += poly.o 
 LIB_OBJ += random.o 
-LIB_OBJ += init.o 
+LIB_OBJ += structs_init.o 
 LIB_OBJ += algorithms_generate_keys.o
 LIB_OBJ += algorithms_join_signatures.o
 LIB_OBJ += algorithms_node_sign.o

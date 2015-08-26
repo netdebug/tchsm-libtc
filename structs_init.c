@@ -69,9 +69,7 @@ void tc_clear_public_key(public_key_t * pk) {
     free(pk);
 }
 
-key_metainfo_t * tc_init_key_meta_info(size_t bit_size, uint16_t k, uint16_t l) {
-
-    assert(512 <= bit_size && bit_size <= 8192);
+key_metainfo_t *tc_init_key_metainfo(uint16_t k, uint16_t l) {
     assert(0 < l);
     assert(l/2 < k && k <= l);
 

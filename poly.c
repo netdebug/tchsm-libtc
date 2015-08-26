@@ -6,8 +6,8 @@
 
 /** GMP-based polynomial library **/
 
-poly_t * create_random_poly(mpz_t d, int size, mpz_t m) {
-  assert(size > 0 && mpz_sgn(m) > 0);
+poly_t * create_random_poly(mpz_t d, size_t size, mpz_t m) {
+  assert(mpz_sgn(m) > 0);
   poly_t * poly = malloc(sizeof(*poly));
 
   int bit_len = mpz_sizeinbase(m, 2) - 1;

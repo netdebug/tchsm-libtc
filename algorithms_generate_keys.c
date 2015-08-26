@@ -105,7 +105,7 @@ key_share_t ** tc_generate_keys(key_metainfo_t ** out, size_t bit_size, uint16_t
 	assert(k <= ll);
 	assert(ll/2 + 1 <= k);
 
-	key_metainfo_t * info = *out = tc_init_key_metainfo(bit_size, k, ll);
+	key_metainfo_t * info = *out = tc_init_key_metainfo(k, ll);
 	key_share_t ** ks = tc_init_key_shares(info);
 
 	static const int F4 = 65537;
