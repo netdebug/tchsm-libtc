@@ -92,7 +92,7 @@ static void tc_pkcs1_encoding(bytes_t * out, bytes_t * digest, tc_hash_type_t ha
     memcpy(p, digest->data, digest->data_len);
 }
 
-bytes_t * tc_prepare_document(const bytes_t * doc, tc_hash_type_t hash_type, const key_meta_info_t * metainfo) {
+bytes_t * tc_prepare_document(const bytes_t * doc, tc_hash_type_t hash_type, const key_metainfo_t * metainfo) {
     size_t data_len = metainfo->public_key->n->data_len;
 
     bytes_t * out = tc_init_bytes(malloc(data_len), data_len);

@@ -11,7 +11,7 @@ struct public_key {
     bytes_t * e;
 };
 
-struct key_meta_info {
+struct key_metainfo {
     public_key_t * public_key;
     uint16_t k;
     uint16_t l;
@@ -26,18 +26,16 @@ struct key_share {
 };
 
 struct signature_share {
-    bytes_t * signature;
-    bytes_t * c;
-    bytes_t * z;
+    bytes_t *x_i;
+    bytes_t *c;
+    bytes_t *z;
     uint16_t id;
 };
 
 
-#define TC_OCTET_SIZE(z) ((mpz_sizeinbase(z, 2) + 7) / 8)
 #define TC_GET_OCTETS(z, bcount, op) mpz_import(z, bcount, 1, 1, 0, 0, op)
 #define TC_TO_OCTETS(count, op) mpz_export(NULL, count, 1, 1, 0, 0, op)
 #define TC_ID_TO_INDEX(id) (id-1)
-#define TC_INDEX_TO_ID(idx) (idx+1)
 
 #define TC_MPZ_TO_BYTES(bytes, z) \
     do { bytes_t * b = (bytes); b->data = TC_TO_OCTETS(&b->data_len, z); } while(0)
@@ -46,9 +44,9 @@ struct signature_share {
 
 void *alloc(size_t size);
 public_key_t *tc_init_public_key();
-key_meta_info_t *tc_init_key_meta_info(size_t bit_size, uint16_t k, uint16_t l) ;
+key_metainfo_t *tc_init_key_meta_info(size_t bit_size, uint16_t k, uint16_t l) ;
 signature_share_t *tc_init_signature_share();
 key_share_t *tc_init_key_share();
-key_share_t **tc_init_key_shares(key_meta_info_t *info);
+key_share_t **tc_init_key_shares(key_metainfo_t *info);
 
 #endif

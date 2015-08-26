@@ -69,13 +69,13 @@ void tc_clear_public_key(public_key_t * pk) {
     free(pk);
 }
 
-key_meta_info_t * tc_init_key_meta_info(size_t bit_size, uint16_t k, uint16_t l) {
+key_metainfo_t * tc_init_key_meta_info(size_t bit_size, uint16_t k, uint16_t l) {
 
     assert(512 <= bit_size && bit_size <= 8192);
     assert(0 < l);
     assert(l/2 < k && k <= l);
 
-    key_meta_info_t * metainfo = alloc(sizeof(key_meta_info_t));
+    key_metainfo_t * metainfo = alloc(sizeof(key_metainfo_t));
 
     metainfo->k = k;
     metainfo->l = l;
@@ -88,15 +88,15 @@ key_meta_info_t * tc_init_key_meta_info(size_t bit_size, uint16_t k, uint16_t l)
     return metainfo;
 }
 
-int tc_key_meta_info_k(const key_meta_info_t *i) {
+int tc_key_meta_info_k(const key_metainfo_t *i) {
     return i->k;
 }
 
-int tc_key_meta_info_l(const key_meta_info_t *i) {
+int tc_key_meta_info_l(const key_metainfo_t *i) {
     return i->l;
 }
 
-const public_key_t *tc_key_meta_info_public_key(const key_meta_info_t *i) {
+const public_key_t *tc_key_meta_info_public_key(const key_metainfo_t *i) {
     return i->public_key;
 }
 
@@ -116,7 +116,7 @@ int tc_signature_share_id(const signature_share_t *s) {
     return s->id;
 }
 
-void tc_clear_key_meta_info(key_meta_info_t * info) {
+void tc_clear_key_meta_info(key_metainfo_t * info) {
 	assert(info != NULL);
     tc_clear_public_key(info->public_key);
     tc_clear_bytes(info->vk_v);
@@ -133,7 +133,7 @@ key_share_t * tc_init_key_share() {
     return ks;
 }
 
-key_share_t ** tc_init_key_shares(key_meta_info_t * info) {
+key_share_t ** tc_init_key_shares(key_metainfo_t * info) {
 	assert(info != NULL);
 	assert(info->l > 0);
 
@@ -151,7 +151,7 @@ void tc_clear_key_share(key_share_t * share) {
     free(share);
 }
 
-void tc_clear_key_shares(key_share_t ** shares, key_meta_info_t * info){
+void tc_clear_key_shares(key_share_t ** shares, key_metainfo_t * info){
 	assert(info != NULL && info->l > 0);
     for(int i=0; i<info->l; i++) {
         tc_clear_key_share(shares[i]);
@@ -164,13 +164,13 @@ signature_share_t * tc_init_signature_share() {
 
     ss->z = tc_init_bytes(NULL, 0);
     ss->c = tc_init_bytes(NULL, 0);
-    ss->signature = tc_init_bytes(NULL, 0);
+    ss->x_i = tc_init_bytes(NULL, 0);
 
     assert(ss != NULL);
     return ss;
 }
 
 void tc_clear_signature_share(signature_share_t * ss) {
-    tc_clear_bytes_n(ss->signature, ss->c, ss->z, NULL);
+    tc_clear_bytes_n(ss->x_i, ss->c, ss->z, NULL);
     free(ss);
 }

@@ -11,7 +11,7 @@
 #include "tc.h"
 #include "tc_internal.h"
 
-int tc_rsa_verify(bytes_t * signature, bytes_t * doc, key_meta_info_t * info, tc_hash_type_t hashtype) {
+int tc_rsa_verify(bytes_t * signature, bytes_t * doc, key_metainfo_t * info, tc_hash_type_t hashtype) {
 
 	bytes_t * doc_pkcs1 = tc_prepare_document(doc, hashtype, info);
 

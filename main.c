@@ -46,7 +46,7 @@ int main(int argc, char ** argv)
     set_parameters(argc, argv);
     char * b64;
 
-    key_meta_info_t * info;
+    key_metainfo_t * info;
     key_share_t ** shares = tc_generate_keys(&info, 512, k, l);
 
     bytes_t * doc = tc_init_bytes( (byte*)message, strlen(message));

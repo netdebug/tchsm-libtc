@@ -35,7 +35,7 @@ void generate_safe_prime(mpz_t out, int bit_len, random_fn random) {
 	mpz_clears(p,q,r,t1,NULL);
 }
 
-static void generate_group_verifier(key_meta_info_t * info) {
+static void generate_group_verifier(key_metainfo_t * info) {
 	mpz_t vk_v, rand, d, j, n;
 	mpz_inits(vk_v, rand, d, j, n, NULL);
 
@@ -55,7 +55,7 @@ static void generate_group_verifier(key_meta_info_t * info) {
 }
 
 /* Have to be used after group verifier generation */
-static void generate_share_verifiers(key_share_t ** shares, key_meta_info_t * info) {
+static void generate_share_verifiers(key_share_t ** shares, key_metainfo_t * info) {
 	mpz_t vk_v, s_i, vk_i, n;
 	mpz_inits(vk_v, s_i, vk_i, n, NULL);
 	TC_BYTES_TO_MPZ(vk_v, info->vk_v);
@@ -68,7 +68,7 @@ static void generate_share_verifiers(key_share_t ** shares, key_meta_info_t * in
 	mpz_clears(vk_v, s_i, vk_i, n, NULL);
 }
 
-static void generate_key_shares(key_share_t ** shares, const key_meta_info_t * info, mpz_t a0){ 
+static void generate_key_shares(key_share_t ** shares, const key_metainfo_t * info, mpz_t a0){
 	int i;
 	mpz_t t1, s_i, n, m;
 	mpz_inits(t1, s_i, n, m, NULL);
@@ -96,7 +96,7 @@ static void generate_key_shares(key_share_t ** shares, const key_meta_info_t * i
  * \param info a pointer to the meta info of the key set to be generated
  * \param public_key a pointer to a initialized but not defined public_key
  */
-key_share_t ** tc_generate_keys(key_meta_info_t ** out, size_t bit_size, uint16_t k, uint16_t ll){
+key_share_t ** tc_generate_keys(key_metainfo_t ** out, size_t bit_size, uint16_t k, uint16_t ll){
 
 	/* Preconditions */
 	assert(out != NULL);
@@ -105,7 +105,7 @@ key_share_t ** tc_generate_keys(key_meta_info_t ** out, size_t bit_size, uint16_
 	assert(k <= ll);
 	assert(ll/2 + 1 <= k);
 
-	key_meta_info_t * info = *out = tc_init_key_meta_info(bit_size, k, ll);
+	key_metainfo_t * info = *out = tc_init_key_meta_info(bit_size, k, ll);
 	key_share_t ** ks = tc_init_key_shares(info);
 
 	static const int F4 = 65537;

@@ -27,7 +27,8 @@ set(SOURCE_FILES
     algorithms_pkcs1_encoding.c
     algorithms_rsa_verify.c
     algorithms_verify_signature.c
-    init.c
+    structs_init.c
+    structs_serialization.c
     mathutils.h
     poly.c
     random.c
@@ -35,7 +36,7 @@ set(SOURCE_FILES
     tc_internal.h
     unit_test.h)
 
-add_library(tc SHARED ${SOURCE_FILES})
+add_library(tc SHARED ${SOURCE_FILES} )
 message(tc ${GMP_LIBRARIES} ${MHASH_LIBRARIES} ${CHECK_LIBRARIES})
 target_link_libraries(tc ${GMP_LIBRARIES} ${MHASH_LIBRARIES} ${CHECK_LIBRARIES})
 

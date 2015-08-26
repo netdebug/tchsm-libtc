@@ -19,7 +19,7 @@
 #include <stdlib.h>
 
 START_TEST(test_complete_sign){
-    key_meta_info_t * info;
+    key_metainfo_t * info;
     key_share_t ** shares = tc_generate_keys(&info, 1024, 3, 5);
 
     const char * message = "Hola mundo";

@@ -7,12 +7,12 @@
 
 extern const unsigned int HASH_LEN; /* Defined somewhere :P */
 
-int tc_verify_signature(const signature_share_t * signature, const bytes_t * doc, const key_meta_info_t * info){
+int tc_verify_signature(const signature_share_t * signature, const bytes_t * doc, const key_metainfo_t * info){
     mpz_t x, xi, z, c, n, vk_v, vk_i, delta, xtilde, xi2, neg_c, v_prime, xi_neg_2c, x_prime, aux;
     mpz_inits(x, xi, z, c, n, vk_v, vk_i, delta, xtilde, xi2, neg_c, v_prime, xi_neg_2c, x_prime, aux, NULL);
     
     TC_BYTES_TO_MPZ(x, doc);
-    TC_BYTES_TO_MPZ(xi, signature->signature);
+    TC_BYTES_TO_MPZ(xi, signature->x_i);
     TC_BYTES_TO_MPZ(z, signature->z);
     TC_BYTES_TO_MPZ(c, signature->c);
     TC_BYTES_TO_MPZ(n, info->public_key->n);

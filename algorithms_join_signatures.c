@@ -16,13 +16,13 @@ void lagrange_interpolation(mpz_t out, int j, int k,
 /**
  * @param out the result of the algorithm.
  * @param document the document that has been signed.
- * @param signatures the array of pointers to signature shares, that are received.
- * @param k the number of signature shares received.
+ * @param signatures the array of pointers to si shares, that are received.
+ * @param k the number of si shares received.
  * @param pk a pointer to the public key of this process
  * @param info a pointer to the meta info of the key set
  */
 bytes_t * tc_join_signatures(const signature_share_t ** signatures,
-		const bytes_t * document, const key_meta_info_t * info) {
+		const bytes_t * document, const key_metainfo_t * info) {
 	assert(signatures != NULL);
 #ifndef NDEBUG
 	for (int i = 0; i < info->k; i++) {
@@ -54,7 +54,7 @@ bytes_t * tc_join_signatures(const signature_share_t ** signatures,
 	int k = info->k;
 	for (int i = 0; i < k; i++) {
 		int id = signatures[i]->id;
-		TC_BYTES_TO_MPZ(s_i, signatures[i]->signature);
+		TC_BYTES_TO_MPZ(s_i, signatures[i]->x_i);
 		lagrange_interpolation(lambda_k_2, id, k, signatures, delta);
 		mpz_mul_ui(lambda_k_2, lambda_k_2, 2);
 
