@@ -311,7 +311,6 @@ START_TEST(test_serialization_signature_share)
 END_TEST
 START_TEST(test_serialization_key_metainfo)
     {
-        // TODO: Make this pass...
         key_metainfo_t *mi;
         key_share_t **shares = tc_generate_keys(&mi, 512, 3, 5);
 
