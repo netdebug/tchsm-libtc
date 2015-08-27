@@ -2,7 +2,6 @@
 #define MATHUTILS_H
 
 #include <gmp.h>
-#include <_types/_uint32_t.h>
 
 typedef void (*random_fn)(mpz_t rop, int bit_len);
 
