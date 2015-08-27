@@ -134,7 +134,7 @@ char *tc_serialize_key_metainfo(const key_metainfo_t *kmi) {
     do { \
         memcpy(&dst, buf, sizeof dst); \
         dst = ntohs(dst); \
-        p += sizeof dst; \
+        (buf) += sizeof dst; \
     } while (0)
 
 #define DESERIALIZE_BYTES(dst, buf) \
@@ -154,8 +154,14 @@ key_share_t *tc_deserialize_key_share(const char *b64) {
     bytes_t *buffer = tc_b64_bytes(b64);
     uint8_t *p = buffer->data;
 
-    uint16_t version;
-    DESERIALIZE_SHORT(version, p);
+    uint16_t message_version;
+    DESERIALIZE_SHORT(message_version, p);
+
+    if (message_version != version) {
+        fprintf(stderr, "KeyShare, Version mismatch: (Message=%x) != (Library=%x)\n", message_version, version);
+        tc_clear_bytes(buffer);
+        return NULL;
+    }
 
     key_share_t *ks = tc_init_key_share();
 
@@ -173,8 +179,14 @@ signature_share_t *tc_deserialize_signature_share(const char *b64) {
     uint8_t *p = buffer->data;
 
 
-    uint16_t version;
-    DESERIALIZE_SHORT(version, p);
+    uint16_t message_version;
+    DESERIALIZE_SHORT(message_version, p);
+
+    if (message_version != version) {
+        fprintf(stderr, "SignatureShare, Version mismatch: (Message=%d) != (Library=%d)\n", message_version, version);
+        tc_clear_bytes(buffer);
+        return NULL;
+    }
 
     signature_share_t *ss = tc_init_signature_share();
     DESERIALIZE_SHORT(ss->id, p);
@@ -191,8 +203,14 @@ key_metainfo_t *tc_deserialize_key_metainfo(const char *b64) {
     bytes_t *buffer = tc_b64_bytes(b64);
     uint8_t *p = buffer->data;
 
-    uint16_t version;
-    DESERIALIZE_SHORT(version, p);
+    uint16_t message_version;
+    DESERIALIZE_SHORT(message_version, p);
+
+    if (message_version != version) {
+        fprintf(stderr, "KeyMetaInfo, Version mismatch: (Message=%d) != (Library=%d)\n", message_version, version);
+        tc_clear_bytes(buffer);
+        return NULL;
+    }
 
     bytes_t *pk = tc_init_bytes(NULL, 0);
     DESERIALIZE_BYTES(pk, p);
@@ -223,7 +241,6 @@ key_metainfo_t *tc_deserialize_key_metainfo(const char *b64) {
 #ifndef NO_CHECK
 
 #include <check.h>
-#include <stdio.h>
 
 static int bytes_eq(bytes_t *a, bytes_t *b) {
     return (a->data_len == b->data_len) &&
@@ -236,7 +253,6 @@ START_TEST(test_serialization_key_share)
         key_share_t **shares = tc_generate_keys(&info, 512, 3, 5);
 
         char *share0_b64 = tc_serialize_key_share(shares[0]);
-
         key_share_t *share0 = tc_deserialize_key_share(share0_b64);
 
         ck_assert(shares[0]->id == share0->id);
@@ -246,6 +262,22 @@ START_TEST(test_serialization_key_share)
         tc_clear_key_shares(shares, info);
         tc_clear_key_meta_info(info);
         tc_clear_key_share(share0);
+        free(share0_b64);
+    }
+END_TEST
+
+START_TEST(test_serialization_key_share_error) {
+        key_metainfo_t *info;
+        key_share_t **shares = tc_generate_keys(&info, 512, 3, 5);
+
+        char *share0_b64 = tc_serialize_key_share(shares[0]);
+        share0_b64[0] = '0';
+        share0_b64[1] = '0';
+        key_share_t *share0 = tc_deserialize_key_share(share0_b64);
+
+        ck_assert_ptr_eq(share0, NULL);
+        tc_clear_key_shares(shares, info);
+        tc_clear_key_meta_info(info);
         free(share0_b64);
     }
 END_TEST
@@ -295,12 +327,6 @@ START_TEST(test_serialization_key_metainfo)
         for(int i=0; i<mi->l; i++) {
             bytes_t * a = mi->vk_i + i;
             bytes_t * b = new_mi->vk_i + i;
-
-            // for (int i = 0; i < a->data_len; i++) { printf("%02x ", ((uint8_t*)a->data)[i]); }
-            // printf("\n");
-            // for (int i = 0; i < b->data_len; i++) { printf("%02x ", ((uint8_t*)b->data)[i]); }
-            // printf("\ni=%d\n a == b? : %d\n", i, bytes_eq(a,b));
-
             ck_assert(bytes_eq(a, b));
         }
 
@@ -315,6 +341,7 @@ END_TEST
 TCase *tc_test_case_serialization() {
     TCase *tc = tcase_create("poly.c");
     tcase_add_test(tc, test_serialization_key_share);
+    tcase_add_test(tc, test_serialization_key_share_error);
     tcase_add_test(tc, test_serialization_signature_share);
     tcase_add_test(tc, test_serialization_key_metainfo);
     return tc;
