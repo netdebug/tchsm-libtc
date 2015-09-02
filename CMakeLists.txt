@@ -44,7 +44,7 @@ target_link_libraries(tc ${CMAKE_THREAD_LIBS_INIT} ${GMP_LIBRARIES} ${MHASH_LIBR
 
 
 add_executable(check_algorithms check_algorithms.c)
-target_link_libraries(check_algorithms tc)
+target_link_libraries(check_algorithms tc ${CMAKE_THREAD_LIBS_INIT})
 
 add_executable(main main.c)
-target_link_libraries(main tc)
+target_link_libraries(main tc ${CMAKE_THREAD_LIBS_INIT})
