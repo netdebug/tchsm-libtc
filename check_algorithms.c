@@ -44,7 +44,7 @@ START_TEST(test_complete_sign){
         tc_clear_signature_share(signatures[i]);
     }
     tc_clear_key_shares(shares, info);
-    tc_clear_key_meta_info(info);
+    tc_clear_key_metainfo(info);
 }
 END_TEST
 

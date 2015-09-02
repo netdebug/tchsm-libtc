@@ -79,5 +79,5 @@ int main(int argc, char ** argv)
         tc_clear_signature_share(signatures[i]);
     }
     tc_clear_key_shares(shares, info);
-    tc_clear_key_meta_info(info);
+    tc_clear_key_metainfo(info);
 }

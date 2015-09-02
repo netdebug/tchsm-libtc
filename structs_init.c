@@ -114,7 +114,7 @@ int tc_signature_share_id(const signature_share_t *s) {
     return s->id;
 }
 
-void tc_clear_key_meta_info(key_metainfo_t * info) {
+void tc_clear_key_metainfo(key_metainfo_t * info) {
 	assert(info != NULL);
     tc_clear_public_key(info->public_key);
     tc_clear_bytes(info->vk_v);

@@ -260,7 +260,7 @@ START_TEST(test_serialization_key_share)
         ck_assert(bytes_eq(shares[0]->s_i, share0->s_i));
 
         tc_clear_key_shares(shares, info);
-        tc_clear_key_meta_info(info);
+        tc_clear_key_metainfo(info);
         tc_clear_key_share(share0);
         free(share0_b64);
     }
@@ -277,7 +277,7 @@ START_TEST(test_serialization_key_share_error) {
 
         ck_assert_ptr_eq(share0, NULL);
         tc_clear_key_shares(shares, info);
-        tc_clear_key_meta_info(info);
+        tc_clear_key_metainfo(info);
         free(share0_b64);
     }
 END_TEST
@@ -302,7 +302,7 @@ START_TEST(test_serialization_signature_share)
         ck_assert(bytes_eq(s->z, new_s->z));
 
         tc_clear_key_shares(shares, info);
-        tc_clear_key_meta_info(info);
+        tc_clear_key_metainfo(info);
         tc_clear_bytes_n(doc, doc_pkcs1, NULL);
         tc_clear_signature_share(s);
         tc_clear_signature_share(new_s);
@@ -330,9 +330,9 @@ START_TEST(test_serialization_key_metainfo)
         }
 
         tc_clear_key_shares(shares, mi);
-        tc_clear_key_meta_info(mi);
+        tc_clear_key_metainfo(mi);
         free(mi_b64);
-        tc_clear_key_meta_info(new_mi);
+        tc_clear_key_metainfo(new_mi);
     }
 END_TEST
 

@@ -62,6 +62,18 @@ int tc_signature_share_id(const signature_share_t *s);
 /* Serializers */
 char *tc_bytes_b64(const bytes_t *b);
 bytes_t *tc_b64_bytes(const char *b);
+
+/**** Serialization Format
+ * The colon means concatenation.
+ * KeyShare:
+ *  Base64(version :: id :: n_len :: n :: si_len :: si)
+ * SignatureShare:
+ *  Base64(version :: id :: xi_len :: xi :: c_len :: c :: z_len :: z)
+ * PublicKey:
+ *  Bytes(n :: e :: m) -> pk_len :: pk
+ * KeyMetainfo:
+ *  Base64(version :: pk_len :: pk :: k :: l :: vk_len :: vk :: v0_len :: v0 :: ... :: v(l-1)_len :: v(l-1))
+ */
 char *tc_serialize_key_share(const key_share_t *ks);
 char *tc_serialize_signature_share(const signature_share_t *ss);
 char *tc_serialize_key_metainfo(const key_metainfo_t *kmi);
@@ -72,7 +84,7 @@ key_metainfo_t *tc_deserialize_key_metainfo(const char *b64);
 /* Destructors */
 void tc_clear_bytes(bytes_t *bytes);
 void tc_clear_bytes_n(bytes_t *bytes, ...);
-void tc_clear_key_meta_info(key_metainfo_t *info);
+void tc_clear_key_metainfo(key_metainfo_t *info);
 void tc_clear_signature_share(signature_share_t *ss);
 void tc_clear_key_share(key_share_t *share);
 void tc_clear_key_shares(key_share_t **shares, key_metainfo_t *info);

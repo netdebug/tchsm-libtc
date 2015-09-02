@@ -19,6 +19,8 @@ find_package(Check REQUIRED)
 include_directories(${CHECK_INCLUDE_DIRS})
 link_directories(${CHECK_LIBRARY_DIRS})
 
+find_package(Threads REQUIRED)
+
 set(SOURCE_FILES
     algorithms_base64.c
     algorithms_generate_keys.c
@@ -38,7 +40,7 @@ set(SOURCE_FILES
 
 add_library(tc STATIC ${SOURCE_FILES} )
 message(tc ${GMP_LIBRARIES} ${MHASH_LIBRARIES} ${CHECK_LIBRARIES})
-target_link_libraries(tc ${GMP_LIBRARIES} ${MHASH_LIBRARIES} ${CHECK_LIBRARIES})
+target_link_libraries(tc ${CMAKE_THREAD_LIBS_INIT} ${GMP_LIBRARIES} ${MHASH_LIBRARIES} ${CHECK_LIBRARIES})
 
 
 add_executable(check_algorithms check_algorithms.c)
