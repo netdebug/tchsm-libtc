@@ -1,0 +1,33 @@
+cmake_minimum_required(VERSION 3.2)
+
+include_directories(${tclib_SOURCE_DIR}/include)
+link_directories(${PROJECT_BINARY_DIR})
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c11")
+
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${tclib_SOURCE_DIR}/cmake)
+include(FindGMP)
+include(FindMHASH)
+include(FindCheck)
+
+find_package(GMP REQUIRED)
+message("gmp include ${GMP_INCLUDE_DIR}")
+include_directories(${GMP_INCLUDE_DIRS})
+
+find_package(MHASH REQUIRED)
+include_directories(${MHASH_INCLUDE_DIR})
+
+find_package(Check REQUIRED)
+include_directories(${CHECK_INCLUDE_DIRS})
+link_directories(${CHECK_LIBRARY_DIRS})
+
+find_package(Threads REQUIRED)
+
+set(SOURCE_FILES
+    test_algorithms_generate_keys.c  
+    test_algorithms_join_signatures.c  
+    test.c  
+    test_check_algorithms.c  
+    test_structs_serialization.c)
+
+add_executable(tests ${SOURCE_FILES} )
+target_link_libraries(tests tc ${CMAKE_THREAD_LIBS_INIT} ${GMP_LIBRARIES} ${MHASH_LIBRARIES} ${CHECK_LIBRARIES})

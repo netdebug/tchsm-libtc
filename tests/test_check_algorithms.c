@@ -48,37 +48,11 @@ START_TEST(test_complete_sign){
 }
 END_TEST
 
-Suite * algorithms_suite(void)
-{
-    Suite *s;
-    TCase *tc_core;
-
-    s = suite_create("Algorithms");
-
-    /* Core test case */
-    tc_core = tcase_create("System test");
-    tcase_add_test(tc_core, test_complete_sign);
-    tcase_set_timeout(tc_core, 320);
-    suite_add_tcase(s, tc_core);
-
-    suite_add_tcase(s, tc_test_case_algorithms_generate_keys_c());
-    suite_add_tcase(s, tc_test_case_algorithms_join_signatures_c());
-    suite_add_tcase(s, tc_test_case_poly_c());
-    suite_add_tcase(s, tc_test_case_serialization());
-
-    return s;
+TCase *tc_test_case_system_test() {
+    TCase *tc = tcase_create("System test");
+    tcase_set_timeout(tc, 500);
+    tcase_add_test(tc, test_complete_sign);
+    return tc;
 }
 
-int main() {
-    int number_failed;
-    Suite *s;
-    SRunner *sr;
 
-    s = algorithms_suite();
-    sr = srunner_create(s);
-
-    srunner_run_all(sr, CK_VERBOSE);
-    number_failed = srunner_ntests_failed(sr);
-    srunner_free(sr);
-    return (number_failed == 0) ? EXIT_SUCCESS : EXIT_FAILURE;
-}
