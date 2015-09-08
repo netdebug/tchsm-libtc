@@ -2,6 +2,8 @@
 // Created by Francisco Cifuentes on 9/3/15.
 //
 
+#define _POSIX_C_SOURCE 200809L
+
 #include <check.h>
 #include <tc.h>
 #include <stdlib.h>
