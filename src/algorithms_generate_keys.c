@@ -18,15 +18,17 @@ void generate_safe_prime(mpz_t out, int bit_len, random_fn random) {
     int q_composite, r_composite;
 
     do {
-        random_prime(p, bit_len, random);
-        mpz_sub_ui(t1, p, 1);
-        mpz_fdiv_q_ui(q, t1, 2);
+	random_prime(p, bit_len, random);
+	mpz_sub_ui(t1, p, 1);
+	mpz_fdiv_q_ui(q, t1, 2);
 
-        mpz_mul_ui(t1, p, 2);
-        mpz_add_ui(r, t1, 1);
+	mpz_mul_ui(t1, p, 2);
+	mpz_add_ui(r, t1, 1);
 
-        q_composite = mpz_probab_prime_p(q, c) == 0;
-        r_composite = mpz_probab_prime_p(r, c) == 0;
+	/* r > p > q */
+
+	q_composite = mpz_probab_prime_p(q, c) == 0;
+	r_composite = mpz_probab_prime_p(r, c) == 0;
     } while (q_composite && r_composite);
 
     mpz_set(out, q_composite ? r : p);
@@ -42,8 +44,8 @@ void generate_group_verifier(key_metainfo_t *info) {
 
     /* Calculate v */
     do {
-        random_dev(rand, mpz_sizeinbase(n, 2));
-        mpz_gcd(d, rand, n);
+	random_dev(rand, mpz_sizeinbase(n, 2));
+	mpz_gcd(d, rand, n);
     } while (mpz_cmp_ui(d, 1) != 0);
 
     mpz_powm_ui(vk_v, rand, 2, n);
@@ -60,9 +62,9 @@ void generate_share_verifiers(key_share_t **shares, key_metainfo_t *info) {
     TC_BYTES_TO_MPZ(vk_v, info->vk_v);
     TC_BYTES_TO_MPZ(n, info->public_key->n);
     for (int i = 0; i < info->l; i++) {
-        TC_BYTES_TO_MPZ(s_i, shares[i]->s_i);
-        mpz_powm(vk_i, vk_v, s_i, n);
-        TC_MPZ_TO_BYTES(info->vk_i + i, vk_i);
+	TC_BYTES_TO_MPZ(s_i, shares[i]->s_i);
+	mpz_powm(vk_i, vk_v, s_i, n);
+	TC_MPZ_TO_BYTES(info->vk_i + i, vk_i);
     }
     mpz_clears(vk_v, s_i, vk_i, n, NULL);
 }
@@ -78,11 +80,11 @@ void generate_key_shares(key_share_t **shares, const key_metainfo_t *info, mpz_t
     poly_t *poly = create_random_poly(a0, info->k - 1, m);
 
     for (i = 1; i <= info->l; i++) {
-        shares[TC_ID_TO_INDEX(i)]->id = i;
-        poly_eval_ui(t1, poly, i);
-        mpz_mod(s_i, t1, m);
-        TC_MPZ_TO_BYTES(shares[TC_ID_TO_INDEX(i)]->s_i, s_i);
-        TC_MPZ_TO_BYTES(shares[TC_ID_TO_INDEX(i)]->n, n);
+	shares[TC_ID_TO_INDEX(i)]->id = i;
+	poly_eval_ui(t1, poly, i);
+	mpz_mod(s_i, t1, m);
+	TC_MPZ_TO_BYTES(shares[TC_ID_TO_INDEX(i)]->s_i, s_i);
+	TC_MPZ_TO_BYTES(shares[TC_ID_TO_INDEX(i)]->n, n);
     }
 
     clear_poly(poly);
@@ -128,9 +130,9 @@ key_share_t **tc_generate_keys(key_metainfo_t **out, size_t bit_size, uint16_t k
 
     mpz_set_ui(l, ll);
     if (mpz_cmp_ui(l, F4) <= 0) { // group_size < F4
-        mpz_set_ui(e, F4);
+	mpz_set_ui(e, F4);
     } else {
-        random_prime(e, mpz_sizeinbase(l, 2) + 1, random_dev);
+	random_prime(e, mpz_sizeinbase(l, 2) + 1, random_dev);
     }
 
     TC_MPZ_TO_BYTES(info->public_key->n, n);
@@ -149,7 +151,7 @@ key_share_t **tc_generate_keys(key_metainfo_t **out, size_t bit_size, uint16_t k
     assert(ks != NULL);
 #ifndef NDEBUG
     for (int i = 0; i < info->l; i++) {
-        assert(ks[i] != NULL);
+	assert(ks[i] != NULL);
     }
 #endif
     assert(*out != NULL);

@@ -8,4 +8,3 @@ Its dependencies are the [GMP library version 6] and the [Mhash Library]. For te
 [GMP library version 6]:https://gmplib.org/
 [Mhash Library]:http://mhash.sourceforge.net/
 [Check]:http://check.sourceforge.net/
-[Nettle]:http://www.lysator.liu.se/~nisse/nettle/nettle.html

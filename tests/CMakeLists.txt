@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.2)
+cmake_minimum_required(VERSION 2.8)
 
 include_directories(${tclib_SOURCE_DIR}/include)
 link_directories(${PROJECT_BINARY_DIR})
@@ -27,7 +27,7 @@ set(SOURCE_FILES
     test_algorithms_join_signatures.c  
     test.c  
     test_check_algorithms.c  
-    test_structs_serialization.c)
+    test_structs_serialization.c test_base64.c test_poly.c)
 
 add_executable(tests ${SOURCE_FILES} )
 target_link_libraries(tests tc ${CMAKE_THREAD_LIBS_INIT} ${GMP_LIBRARIES} ${MHASH_LIBRARIES} ${CHECK_LIBRARIES})

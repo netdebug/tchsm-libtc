@@ -1,6 +1,5 @@
 #include <gmp.h>
 #include <mhash.h>
-#include <stdio.h>
 
 #include "tc.h"
 #include "tc_internal.h"

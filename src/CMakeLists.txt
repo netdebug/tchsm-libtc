@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.2)
+cmake_minimum_required(VERSION 2.8)
 
 include_directories(${tclib_SOURCE_DIR}/include)
 #set(CMAKE_PREFIX_PATH "/opt/local")
@@ -16,10 +16,6 @@ include_directories(${GMP_INCLUDE_DIRS})
 find_package(MHASH REQUIRED)
 include_directories(${MHASH_INCLUDE_DIR})
 
-find_package(Check REQUIRED)
-include_directories(${CHECK_INCLUDE_DIRS})
-link_directories(${CHECK_LIBRARY_DIRS})
-
 set(SOURCE_FILES
     algorithms_base64.c
     algorithms_generate_keys.c
@@ -34,8 +30,7 @@ set(SOURCE_FILES
     random.c)
 
 add_library(tc STATIC ${SOURCE_FILES} )
-message(tc ${GMP_LIBRARIES} ${MHASH_LIBRARIES} ${CHECK_LIBRARIES})
-target_link_libraries(tc ${GMP_LIBRARIES} ${MHASH_LIBRARIES} ${CHECK_LIBRARIES})
+target_link_libraries(tc ${GMP_LIBRARIES} ${MHASH_LIBRARIES})
 
 add_executable(main main.c)
 target_link_libraries(main tc)

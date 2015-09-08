@@ -19,7 +19,6 @@
  * THE SOFTWARE. 
  */
 
-#include <assert.h>
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
@@ -45,31 +44,31 @@ static char *b64_encode (const uint8_t * buffer, size_t len )
 
     const uint8_t * cur = buffer;
     for(size_t i = 0; i < len/3; i++) {
-        temp  = ( *cur++ ) << 16;
-        temp += ( *cur++ ) << 8;
-        temp += ( *cur++ );
+	temp  = ( *cur++ ) << 16;
+	temp += ( *cur++ ) << 8;
+	temp += ( *cur++ );
 
-        *p++ = lookup_table[( temp & 0x00FC0000 ) >> 18];
-        *p++ = lookup_table[( temp & 0x0003F000 ) >> 12];
-        *p++ = lookup_table[( temp & 0x00000FC0 ) >> 6 ];
-        *p++ = lookup_table[( temp & 0x0000003F )      ];
+	*p++ = lookup_table[( temp & 0x00FC0000 ) >> 18];
+	*p++ = lookup_table[( temp & 0x0003F000 ) >> 12];
+	*p++ = lookup_table[( temp & 0x00000FC0 ) >> 6 ];
+	*p++ = lookup_table[( temp & 0x0000003F )      ];
     }
     switch(len % 3) {
-        case 1:
-            temp = ( *cur++ ) << 16;
-            *p++ = lookup_table[( temp & 0x00FC0000 ) >> 18];
-            *p++ = lookup_table[( temp & 0x0003F000 ) >> 12];
-            *p++ = pad;
-            *p++ = pad;
-            break;
-        case 2:
-            temp = ( *cur++ ) << 16;
-            temp += ( *cur++ ) << 8;
-            *p++ = lookup_table[( temp & 0x00FC0000 ) >> 18];
-            *p++ = lookup_table[( temp & 0x0003F000 ) >> 12];
-            *p++ = lookup_table[( temp & 0x00000FC0 ) >> 6 ];
-            *p++ = pad;
-            break;
+    case 1:
+	temp = ( *cur++ ) << 16;
+	*p++ = lookup_table[( temp & 0x00FC0000 ) >> 18];
+	*p++ = lookup_table[( temp & 0x0003F000 ) >> 12];
+	*p++ = pad;
+	*p++ = pad;
+	break;
+    case 2:
+	temp = ( *cur++ ) << 16;
+	temp += ( *cur++ ) << 8;
+	*p++ = lookup_table[( temp & 0x00FC0000 ) >> 18];
+	*p++ = lookup_table[( temp & 0x0003F000 ) >> 12];
+	*p++ = lookup_table[( temp & 0x00000FC0 ) >> 6 ];
+	*p++ = pad;
+	break;
     }
     *p = '\0';
 
@@ -78,8 +77,8 @@ static char *b64_encode (const uint8_t * buffer, size_t len )
 
 static size_t b64_length(const char *input, size_t len) {
     size_t padding =
-    		input[len-2] == pad? 2 :
-    		input[len-1] == pad? 1 : 0;
+	input[len-2] == pad? 2 :
+	input[len-1] == pad? 1 : 0;
 
     return 3*len/4 - padding;
 }
@@ -87,7 +86,7 @@ static size_t b64_length(const char *input, size_t len) {
 static uint8_t *b64_decode ( const char *input, size_t len , size_t *out_size)
 {
     if ( len % 4 ) { 
-        return NULL;
+	return NULL;
     }
 
     *out_size = b64_length(input, len);
@@ -98,38 +97,38 @@ static uint8_t *b64_decode ( const char *input, size_t len , size_t *out_size)
     uint32_t temp = 0;
     const char * cur = input;
     while ( cur < input + len ) {
-        for ( size_t i = 0; i < 4; i++ ) {
-            temp <<= 6;
-            if ( *cur >= 0x41 && *cur <= 0x5A ) { 
-                temp |= *cur - 0x41;
-            } else if ( *cur >= 0x61 && *cur <= 0x7A ) {
-                temp |= *cur - 0x47;
-            } else if ( *cur >= 0x30 && *cur <= 0x39 ) {
-                temp |= *cur + 0x04;
-            } else if ( *cur == 0x2B ) {
-                temp |= 0x3E;
-            } else if ( *cur == 0x2F ) {
-                temp |= 0x3F;
-            } else if ( *cur == pad ) {
-                switch ( input + len - cur ) {
-                    case 1:
-                        *p++ = ( ( temp >> 16 ) & 0x000000FF );
-                        *p++ = ( ( temp >> 8 ) & 0x000000FF );
-                        return out;
-                    case 2:
-                        *p++ = ( ( temp >> 10 ) & 0x000000FF );
-                        return out;
-                    default:
-                        goto on_error;
-                }
-            }  else {
-                goto on_error;
-            }
-            cur++;
-        }
-        *p++ = ( ( temp >> 16 ) & 0x000000FF );
-        *p++ = ( ( temp >> 8 ) & 0x000000FF );
-        *p++ = ( ( temp ) & 0x000000FF );
+	for ( size_t i = 0; i < 4; i++ ) {
+	    temp <<= 6;
+	    if ( *cur >= 0x41 && *cur <= 0x5A ) { 
+		temp |= *cur - 0x41;
+	    } else if ( *cur >= 0x61 && *cur <= 0x7A ) {
+		temp |= *cur - 0x47;
+	    } else if ( *cur >= 0x30 && *cur <= 0x39 ) {
+		temp |= *cur + 0x04;
+	    } else if ( *cur == 0x2B ) {
+		temp |= 0x3E;
+	    } else if ( *cur == 0x2F ) {
+		temp |= 0x3F;
+	    } else if ( *cur == pad ) {
+		switch ( input + len - cur ) {
+		case 1:
+		    *p++ = ( ( temp >> 16 ) & 0x000000FF );
+		    *p++ = ( ( temp >> 8 ) & 0x000000FF );
+		    return out;
+		case 2:
+		    *p++ = ( ( temp >> 10 ) & 0x000000FF );
+		    return out;
+		default:
+		    goto on_error;
+		}
+	    }  else {
+		goto on_error;
+	    }
+	    cur++;
+	}
+	*p++ = ( ( temp >> 16 ) & 0x000000FF );
+	*p++ = ( ( temp >> 8 ) & 0x000000FF );
+	*p++ = ( ( temp ) & 0x000000FF );
     }
     return out;
 
@@ -139,14 +138,15 @@ on_error:
 }
 
 char *tc_bytes_b64(const bytes_t * b) {
-	return b64_encode(b->data, b->data_len);
+    return b64_encode(b->data, b->data_len);
 }
 
 bytes_t * tc_b64_bytes(const char *b64){
-	size_t b64_len = strlen(b64);
+    size_t b64_len = strlen(b64);
 
-	size_t b_len = 0;
-	uint8_t * b = b64_decode(b64, b64_len, &b_len);
+    size_t b_len = 0;
+    uint8_t * b = b64_decode(b64, b64_len, &b_len);
 
-	return tc_init_bytes(b, b_len);
+    return tc_init_bytes(b, b_len);
 }
+

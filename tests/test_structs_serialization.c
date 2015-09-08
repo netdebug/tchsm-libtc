@@ -1,12 +1,8 @@
 #define _POSIX_C_SOURCE 200809L
-#include <string.h>
-#include <stdlib.h>
-#include <stdio.h>
-#include <arpa/inet.h>
 #include "tc_internal.h"
 
-static const uint16_t version = 1;
-
+#include <string.h>
+#include <stdlib.h>
 #include <check.h>
 
 static int bytes_eq(bytes_t *a, bytes_t *b) {

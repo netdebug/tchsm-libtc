@@ -1,6 +1,4 @@
-#include <assert.h>
 #include <gmp.h>
-#include <stdlib.h>
 #include <check.h>
 
 #include "tc.h"

@@ -1,8 +1,4 @@
-#include <assert.h>
 #include <mhash.h>
-#include <stdlib.h>
-#include <string.h>
-
 #include "tc_internal.h"
 
 const uint8_t MD2_PKCS_ID[] = {

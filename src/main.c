@@ -21,21 +21,21 @@ void set_parameters(int argc, char ** argv)
 #ifndef __CPROVER__
     int opt;
     while((opt = getopt(argc, argv, "m:k:l:s:")) != -1){
-        switch(opt) {
-            case 'm':
-                free(message);
-                message = strdup(optarg);
-                break;
-            case 'k':
-                k = strtol(optarg, NULL, 10);
-                break;
-            case 'l':
-                l = strtol(optarg, NULL, 10);
-                break;
-            case 's':
-                key_size = strtol(optarg, NULL, 10);
-                break;
-        }
+	switch(opt) {
+	case 'm':
+	    free(message);
+	    message = strdup(optarg);
+	    break;
+	case 'k':
+	    k = strtol(optarg, NULL, 10);
+	    break;
+	case 'l':
+	    l = strtol(optarg, NULL, 10);
+	    break;
+	case 's':
+	    key_size = strtol(optarg, NULL, 10);
+	    break;
+	}
     }
 #endif
 }
@@ -59,9 +59,9 @@ int main(int argc, char ** argv)
     signature_share_t * signatures[l];
 
     for (int i=0; i<l; i++) {
-        signatures[i] = tc_node_sign(shares[i], doc_pkcs1, info);
-        int verify = tc_verify_signature(signatures[i], doc_pkcs1, info);
-        assert(verify);
+	signatures[i] = tc_node_sign(shares[i], doc_pkcs1, info);
+	int verify = tc_verify_signature(signatures[i], doc_pkcs1, info);
+	assert(verify);
     }
 
     bytes_t * signature = tc_join_signatures((void*) signatures, doc_pkcs1, info);
@@ -72,11 +72,10 @@ int main(int argc, char ** argv)
     printf("Signature: %s\n", b64);
     free(b64);
 
-
     tc_clear_bytes_n(doc, doc_pkcs1, NULL);
     tc_clear_bytes(signature);
     for(int i=0; i<l; i++) {
-        tc_clear_signature_share(signatures[i]);
+	tc_clear_signature_share(signatures[i]);
     }
     tc_clear_key_shares(shares, info);
     tc_clear_key_metainfo(info);

@@ -4,19 +4,10 @@
  */
 #define _POSIX_C_SOURCE 200809L
 
-#include "tc.h"
-#include "tc_internal.h"
-#include "mathutils.h"
 #include "unit_test.h"
-
-#include <string.h>
-#include <stdbool.h>
-#include <gmp.h>
-#include <mhash.h>
-
 #include <check.h>
-
 #include <stdlib.h>
+
 
 Suite * algorithms_suite(void)
 {
@@ -28,6 +19,7 @@ Suite * algorithms_suite(void)
     suite_add_tcase(s, tc_test_case_algorithms_join_signatures_c());
     suite_add_tcase(s, tc_test_case_poly_c());
     suite_add_tcase(s, tc_test_case_serialization());
+    suite_add_tcase(s, tc_test_case_base64());
 
     return s;
 }

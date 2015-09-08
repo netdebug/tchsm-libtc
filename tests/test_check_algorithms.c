@@ -6,17 +6,10 @@
 
 #include "tc.h"
 #include "tc_internal.h"
-#include "mathutils.h"
 #include "unit_test.h"
 
 #include <string.h>
-#include <stdbool.h>
-#include <gmp.h>
-#include <mhash.h>
-
 #include <check.h>
-
-#include <stdlib.h>
 
 START_TEST(test_complete_sign){
     key_metainfo_t * info;
@@ -30,13 +23,13 @@ START_TEST(test_complete_sign){
 
     for (int i=0; i<info->l; i++) {
         signatures[i] = tc_node_sign(shares[i], doc_pkcs1, info);
-        bool verify = tc_verify_signature(signatures[i], doc_pkcs1, info);
+        int verify = tc_verify_signature(signatures[i], doc_pkcs1, info);
         ck_assert_msg(verify, "Signature Share verification.");
     }
 
     bytes_t * signature = tc_join_signatures((void*) signatures, doc_pkcs1, info);
 
-    bool verify = tc_rsa_verify(signature, doc, info, TC_SHA256);
+    int verify = tc_rsa_verify(signature, doc, info, TC_SHA256);
     ck_assert_msg(verify, "RSA Signature verification.");
 
     tc_clear_bytes(signature);

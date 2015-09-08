@@ -1,8 +1,5 @@
 #include <gmp.h>
 #include <mhash.h>
-#include <stddef.h>
-#include <stdlib.h>
-
 #include "mathutils.h"
 #include "tc.h"
 #include "tc_internal.h"
