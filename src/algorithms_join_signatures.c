@@ -42,7 +42,6 @@ bytes_t * tc_join_signatures(const signature_share_t ** signatures,
 	TC_BYTES_TO_MPZ(n, info->public_key->n);
 	TC_BYTES_TO_MPZ(e, info->public_key->e);
 
-	mpz_mod(x, x, n);
 	mpz_fac_ui(delta, info->l);
 
 	mpz_mul(e_prime, delta, delta);

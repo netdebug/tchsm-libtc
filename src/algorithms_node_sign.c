@@ -36,9 +36,7 @@ signature_share_t * tc_node_sign(const key_share_t * share, const bytes_t * doc,
 
     const unsigned long n_bits = mpz_sizeinbase(n, 2); // Bit size of the key.
 
-    mpz_mod(x, x, n);
-   
-    // xi = x^(2*delta*share)
+    // xi = x^(2*delta*share) mod n
     mpz_mul_ui(xi, s_i, 2);
     mpz_mul(xi, xi, delta);
     mpz_powm(xi, x, xi, n);

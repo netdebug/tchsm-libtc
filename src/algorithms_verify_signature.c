@@ -20,7 +20,6 @@ int tc_verify_signature(const signature_share_t * signature, const bytes_t * doc
     int idx = TC_ID_TO_INDEX(signature->id);
     TC_BYTES_TO_MPZ(vk_i, info->vk_i + idx);
 
-    mpz_mod(x, x, n);
     // v
 
     // x~ = x^(4*delta) % n
