@@ -7,8 +7,8 @@
 extern const unsigned int HASH_LEN; /* Defined somewhere :P */
 
 int tc_verify_signature(const signature_share_t * signature, const bytes_t * doc, const key_metainfo_t * info){
-    mpz_t x, xi, z, c, n, e, vk_v, vk_u, vk_i, delta, xtilde, xi2, neg_c, v_prime, xi_neg_2c, x_prime, aux;
-    mpz_inits(x, xi, z, c, n, e, vk_v, vk_u, vk_i, delta, xtilde, xi2, neg_c, v_prime, xi_neg_2c, x_prime, aux, NULL);
+    mpz_t x, xi, z, c, n, e, v, u, vk_i, delta, xtilde, xi2, neg_c, v_prime, xi_neg_2c, x_prime, aux;
+    mpz_inits(x, xi, z, c, n, e, v, u, vk_i, delta, xtilde, xi2, neg_c, v_prime, xi_neg_2c, x_prime, aux, NULL);
     
     TC_BYTES_TO_MPZ(x, doc);
     TC_BYTES_TO_MPZ(xi, signature->x_i);
@@ -16,8 +16,8 @@ int tc_verify_signature(const signature_share_t * signature, const bytes_t * doc
     TC_BYTES_TO_MPZ(c, signature->c);
     TC_BYTES_TO_MPZ(n, info->public_key->n);
     TC_BYTES_TO_MPZ(e, info->public_key->e);
-    TC_BYTES_TO_MPZ(vk_v, info->vk_v);
-    TC_BYTES_TO_MPZ(vk_u, info->vk_u);
+    TC_BYTES_TO_MPZ(v, info->vk_v);
+    TC_BYTES_TO_MPZ(u, info->vk_u);
 
     int idx = TC_ID_TO_INDEX(signature->id);
     TC_BYTES_TO_MPZ(vk_i, info->vk_i + idx);
@@ -25,7 +25,7 @@ int tc_verify_signature(const signature_share_t * signature, const bytes_t * doc
     if(mpz_jacobi(x, n) == -1) {
 	mpz_t ue;
 	mpz_init(ue);
-	mpz_powm(ue, vk_u, e, n);
+	mpz_powm(ue, u, e, n);
 	mpz_mul(x, x, ue);
 	mpz_mod(x, x, n);
 	mpz_clear(ue);
@@ -48,7 +48,7 @@ int tc_verify_signature(const signature_share_t * signature, const bytes_t * doc
     mpz_neg(neg_c, c);
     mpz_powm(v_prime, vk_i, neg_c, n);
 
-    mpz_powm(aux, vk_v, z, n);
+    mpz_powm(aux, v, z, n);
     mpz_mul(v_prime, v_prime, aux);
     mpz_mod(v_prime, v_prime, n);
 
@@ -63,8 +63,8 @@ int tc_verify_signature(const signature_share_t * signature, const bytes_t * doc
 
     size_t v_len, u_len, xtilde_len, v_i_len, xi2_len, v_prime_len, x_prime_len;
 
-    void * v_bytes = TC_TO_OCTETS(&v_len, vk_v);
-    void * u_bytes = TC_TO_OCTETS(&u_len, vk_u);
+    void * v_bytes = TC_TO_OCTETS(&v_len, v);
+    void * u_bytes = TC_TO_OCTETS(&u_len, u);
     void * xtilde_bytes = TC_TO_OCTETS(&xtilde_len, xtilde);
     void * v_i_bytes = TC_TO_OCTETS(&v_i_len, vk_i);
     void * xi2_bytes = TC_TO_OCTETS(&xi2_len, xi2);
@@ -104,7 +104,7 @@ int tc_verify_signature(const signature_share_t * signature, const bytes_t * doc
     int result = mpz_cmp(h, c);
     mpz_clear(h);
 
-    mpz_clears(x, xi, z, c, n, e, vk_v, vk_u, vk_i, delta, xtilde, xi2, neg_c, v_prime, xi_neg_2c, x_prime, aux, NULL);
+    mpz_clears(x, xi, z, c, n, e, v, u, vk_i, delta, xtilde, xi2, neg_c, v_prime, xi_neg_2c, x_prime, aux, NULL);
 
     return result == 0;
 }

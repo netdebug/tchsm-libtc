@@ -23,7 +23,6 @@ const unsigned int HASH_LEN = 32; // sha256 => 256 bits => 32 bytes
 signature_share_t * tc_node_sign(const key_share_t * share, const bytes_t * doc, const key_metainfo_t * info){
     signature_share_t * out = tc_init_signature_share();
 
-    /* ti are temporary variables */
     mpz_t x, n, e, s_i, v, u, vk_i, xi, xi_2, r, v_prime, x_tilde, x_prime, c, z;
     mpz_inits(x, n, e, s_i, v, u, vk_i, xi, xi_2, r, v_prime, x_tilde, x_prime, c, z, NULL);
 
