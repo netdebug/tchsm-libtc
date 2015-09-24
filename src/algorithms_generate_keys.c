@@ -77,7 +77,6 @@ key_share_t **tc_generate_keys(key_metainfo_t **out, size_t bit_size, uint16_t k
     mpz_mul(n, p, q);
     mpz_mul(m, pr, qr);
     TC_MPZ_TO_BYTES(info->public_key->n, n);
-    TC_MPZ_TO_BYTES(info->public_key->m, m);
 
     mpz_set_ui(ll, l);
     if (mpz_cmp_ui(ll, F4) <= 0) { // group_size < F4

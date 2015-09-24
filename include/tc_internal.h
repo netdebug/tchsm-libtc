@@ -7,7 +7,6 @@
 
 struct public_key {
     bytes_t * n;
-    bytes_t * m;
     bytes_t * e;
 };
 

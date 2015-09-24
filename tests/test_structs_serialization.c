@@ -83,7 +83,6 @@ START_TEST(test_serialization_key_metainfo)
         ck_assert(mi->k == new_mi->k);
         ck_assert(mi->l == new_mi->l);
         ck_assert(bytes_eq(mi->public_key->n, new_mi->public_key->n));
-        ck_assert(bytes_eq(mi->public_key->m, new_mi->public_key->m));
         ck_assert(bytes_eq(mi->public_key->e, new_mi->public_key->e));
         ck_assert(bytes_eq(mi->vk_v, new_mi->vk_v));
         for(int i=0; i<mi->l; i++) {

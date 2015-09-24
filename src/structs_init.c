@@ -57,7 +57,6 @@ public_key_t * tc_init_public_key() {
     public_key_t * pk = alloc(sizeof(public_key_t));
 
     pk->n = tc_init_bytes(NULL, 0);
-    pk->m = tc_init_bytes(NULL, 0);
     pk->e = tc_init_bytes(NULL, 0);
 
     return pk;
@@ -65,7 +64,7 @@ public_key_t * tc_init_public_key() {
 
 
 void tc_clear_public_key(public_key_t * pk) {
-    tc_clear_bytes_n(pk->e, pk->m, pk->n, NULL);
+    tc_clear_bytes_n(pk->e, pk->n, NULL);
     free(pk);
 }
 

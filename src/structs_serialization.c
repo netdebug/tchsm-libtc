@@ -71,13 +71,12 @@ char *tc_serialize_signature_share(const signature_share_t *ss) {
 }
 
 static bytes_t *serialize_public_key(const public_key_t *pk) {
-    size_t buffer_size = sizeof(pk->n->data_len) + sizeof(pk->e->data_len) + sizeof(pk->m->data_len) +
-                         pk->n->data_len + pk->m->data_len + pk->e->data_len;
+    size_t buffer_size = sizeof(pk->n->data_len) + sizeof(pk->e->data_len) +
+                         pk->n->data_len + pk->e->data_len;
     uint8_t *buffer = malloc(buffer_size);
     uint8_t *p = buffer;
     SERIALIZE_BYTES(p, pk->n);
     SERIALIZE_BYTES(p, pk->e);
-    SERIALIZE_BYTES(p, pk->m);
 
     bytes_t *bs = tc_init_bytes(buffer, buffer_size);
 
@@ -231,7 +230,6 @@ key_metainfo_t *tc_deserialize_key_metainfo(const char *b64) {
     p = pk->data;
     DESERIALIZE_BYTES(kmi->public_key->n, p);
     DESERIALIZE_BYTES(kmi->public_key->e, p);
-    DESERIALIZE_BYTES(kmi->public_key->m, p);
 
     tc_clear_bytes(buffer);
     return kmi;
