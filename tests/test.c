@@ -15,11 +15,11 @@ Suite * algorithms_suite(void)
 
     /* Core test case */
     suite_add_tcase(s, tc_test_case_system_test());
-    suite_add_tcase(s, tc_test_case_algorithms_generate_keys_c());
-    suite_add_tcase(s, tc_test_case_algorithms_join_signatures_c());
-    suite_add_tcase(s, tc_test_case_poly_c());
-    suite_add_tcase(s, tc_test_case_serialization());
-    suite_add_tcase(s, tc_test_case_base64());
+    // suite_add_tcase(s, tc_test_case_algorithms_generate_keys_c());
+    // suite_add_tcase(s, tc_test_case_algorithms_join_signatures_c());
+    // suite_add_tcase(s, tc_test_case_poly_c());
+    // suite_add_tcase(s, tc_test_case_serialization());
+    // suite_add_tcase(s, tc_test_case_base64());
 
     return s;
 }

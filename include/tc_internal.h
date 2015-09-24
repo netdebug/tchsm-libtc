@@ -16,6 +16,7 @@ struct key_metainfo {
     uint16_t k;
     uint16_t l;
     bytes_t * vk_v;
+    bytes_t * vk_u;
     bytes_t * vk_i;
 };
 

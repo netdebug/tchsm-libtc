@@ -24,21 +24,31 @@ signature_share_t * tc_node_sign(const key_share_t * share, const bytes_t * doc,
     signature_share_t * out = tc_init_signature_share();
 
     /* ti are temporary variables */
-    mpz_t x, n, s_i, vk_v, vk_i, delta, xi, xi_2, r, v_prime, x_tilde, x_prime, c, z;
-    mpz_inits(x, n, s_i, vk_v, vk_i, delta, xi, xi_2, r, v_prime, x_tilde, x_prime, c, z, NULL);
+    mpz_t x, n, e, s_i, v, u, vk_i, xi, xi_2, r, v_prime, x_tilde, x_prime, c, z;
+    mpz_inits(x, n, e, s_i, v, u, vk_i, xi, xi_2, r, v_prime, x_tilde, x_prime, c, z, NULL);
 
     TC_BYTES_TO_MPZ(x, doc);
     TC_BYTES_TO_MPZ(n, info->public_key->n);
+    TC_BYTES_TO_MPZ(e, info->public_key->e);
     TC_BYTES_TO_MPZ(s_i, share->s_i);
-    TC_BYTES_TO_MPZ(vk_v, info->vk_v);
+    TC_BYTES_TO_MPZ(v, info->vk_v);
+    TC_BYTES_TO_MPZ(u, info->vk_u);
     TC_BYTES_TO_MPZ(vk_i, info->vk_i + TC_ID_TO_INDEX(share->id));
-    mpz_fac_ui(delta, info->l);
 
     const unsigned long n_bits = mpz_sizeinbase(n, 2); // Bit size of the key.
 
-    // xi = x^(2*delta*share) mod n
+    // x = doc if (doc | n) == 1 else doc * u^e
+    if(mpz_jacobi(x, n) == -1) {
+	mpz_t ue;
+	mpz_init(ue);
+	mpz_powm(ue, u, e, n);
+	mpz_mul(x, x, ue);
+	mpz_mod(x, x, n);
+	mpz_clear(ue);
+    }
+    
+    // xi = x^(2*share) mod n
     mpz_mul_ui(xi, s_i, 2);
-    mpz_mul(xi, xi, delta);
     mpz_powm(xi, x, xi, n);
 
     // xi_2 = xi^2 
@@ -48,20 +58,20 @@ signature_share_t * tc_node_sign(const key_share_t * share, const bytes_t * doc,
     random_dev(r, n_bits + 2*HASH_LEN*8);
 
     // v_prime = v^r % n
-    mpz_powm(v_prime, vk_v, r, n);
+    mpz_powm(v_prime, v, r, n);
 
     // x_tilde = x^4 % n
-    mpz_mul_ui(x_tilde, delta, 4);
-    mpz_powm(x_tilde, x, x_tilde, n);
+    mpz_powm_ui(x_tilde, x, 4ul, n);
 
     // x_prime = x_tilde^r % n
     mpz_powm(x_prime, x_tilde, r, n);
 
    // Every number calculated, now to bytes...
-    size_t v_len, x_tilde_len, v_i_len, xi_2_len, v_prime_len, x_prime_len;
+    size_t v_len, u_len, x_tilde_len, v_i_len, xi_2_len, v_prime_len, x_prime_len;
 
 
-    void * v_bytes = TC_TO_OCTETS(&v_len, vk_v);
+    void * v_bytes = TC_TO_OCTETS(&v_len, v);
+    void * u_bytes = TC_TO_OCTETS(&u_len, u);
     void * x_tilde_bytes = TC_TO_OCTETS(&x_tilde_len, x_tilde);
     void * v_i_bytes = TC_TO_OCTETS(&v_i_len, vk_i);
     void * xi_2_bytes = TC_TO_OCTETS(&xi_2_len, xi_2);
@@ -74,6 +84,7 @@ signature_share_t * tc_node_sign(const key_share_t * share, const bytes_t * doc,
     MHASH sha = mhash_init(MHASH_SHA256);
 
     mhash(sha, v_bytes, v_len);
+    mhash(sha, u_bytes, u_len);
     mhash(sha, x_tilde_bytes, x_tilde_len);
     mhash(sha, v_i_bytes, v_i_len);
     mhash(sha, xi_2_bytes, xi_2_len);
@@ -86,6 +97,7 @@ signature_share_t * tc_node_sign(const key_share_t * share, const bytes_t * doc,
     mp_get_memory_functions (NULL, NULL, &freefunc);
 
     freefunc(v_bytes, v_len);
+    freefunc(u_bytes, u_len);
     freefunc(x_tilde_bytes, x_tilde_len);
     freefunc(v_i_bytes, v_i_len);
     freefunc(xi_2_bytes, xi_2_len);
@@ -104,6 +116,6 @@ signature_share_t * tc_node_sign(const key_share_t * share, const bytes_t * doc,
     TC_MPZ_TO_BYTES(out->x_i, xi);
     out->id = share->id;
 
-    mpz_clears(x, n, s_i, vk_v, vk_i, delta, xi, xi_2, r, v_prime, x_tilde, x_prime, c, z, NULL);
+    mpz_clears(x, n, e, s_i, v, u, vk_i, xi, xi_2, r, v_prime, x_tilde, x_prime, c, z, NULL);
     return out;
 }
