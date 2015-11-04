@@ -44,7 +44,6 @@ void generate_safe_prime(mpz_t out, int bit_len, random_fn random) {
  * \param public_key a pointer to a initialized but not defined public_key
  */
 key_share_t **tc_generate_keys(key_metainfo_t **out, size_t bit_size, uint16_t k, uint16_t l) {
-
     /* Preconditions */
     assert(out != NULL);
     assert(bit_size >= 512 && bit_size <= 8192);
@@ -59,8 +58,8 @@ key_share_t **tc_generate_keys(key_metainfo_t **out, size_t bit_size, uint16_t k
 
     size_t prime_size = bit_size / 2;
 
-    mpz_t pr, qr, p, q, d, e, ll, m, n;
-    mpz_inits(pr, qr, p, q, d, e, ll, m, n, NULL);
+    mpz_t pr, qr, p, q, d, e, ll, m, n, delta_inv, divisor, r, vk_v, vk_u, s_i, vk_i;
+    mpz_inits(pr, qr, p, q, d, e, ll, m, n, delta_inv, divisor, r, vk_v, vk_u, s_i, vk_i, NULL);
 
     generate_safe_prime(p, prime_size, random_dev);
     generate_safe_prime(q, prime_size, random_dev);
@@ -76,6 +75,7 @@ key_share_t **tc_generate_keys(key_metainfo_t **out, size_t bit_size, uint16_t k
     // n = p * q, m = p' * q'
     mpz_mul(n, p, q);
     mpz_mul(m, pr, qr);
+    TC_MPZ_TO_BYTES(info->public_key->n, n);
 
     mpz_set_ui(ll, l);
     if (mpz_cmp_ui(ll, F4) <= 0) { // group_size < F4
@@ -83,12 +83,12 @@ key_share_t **tc_generate_keys(key_metainfo_t **out, size_t bit_size, uint16_t k
     } else {
 	random_prime(e, mpz_sizeinbase(ll, 2) + 1, random_dev);
     }
+    TC_MPZ_TO_BYTES(info->public_key->e, e);
 
     // d = e^{-1} mod m
     mpz_invert(d, e, m);
 
-    mpz_t divisor, r, vk_v, s_i, vk_i;
-    mpz_inits(divisor, r, vk_v, s_i, vk_i, NULL);
+    // Generate v
     do {
 	random_dev(r, mpz_sizeinbase(n, 2));
 	mpz_gcd(divisor, r, n);
@@ -96,26 +96,38 @@ key_share_t **tc_generate_keys(key_metainfo_t **out, size_t bit_size, uint16_t k
     mpz_powm_ui(vk_v, r, 2, n);
     TC_MPZ_TO_BYTES(info->vk_v, vk_v);
 
+    // Generate u
+    do {
+	random_dev(vk_u, mpz_sizeinbase(n, 2));
+	mpz_mod(vk_u, vk_u, n);
+    } while (mpz_jacobi(vk_u, n) != -1);
+    TC_MPZ_TO_BYTES(info->vk_u, vk_u);
+
+    // Delta = l!
+    mpz_fac_ui(delta_inv, l);
+    mpz_invert(delta_inv, delta_inv, m);
+
+    // Generate Polynomial with random coefficients
     poly_t *poly = create_random_poly(d, info->k-1, m);
+    
+    // Calculate Key Shares
     for(int i=1; i <= info->l; i++) {
 	key_share_t * key_share = ks[TC_ID_TO_INDEX(i)];
 	key_share->id = i;
 	poly_eval_ui(s_i, poly, i);
+	
+	mpz_mul(s_i, s_i, delta_inv);
 	mpz_mod(s_i, s_i, m);
+
 	TC_MPZ_TO_BYTES(key_share->s_i, s_i);
 	TC_MPZ_TO_BYTES(key_share->n, n);
 
 	mpz_powm(vk_i, vk_v, s_i, n);
 	TC_MPZ_TO_BYTES(&info->vk_i[TC_ID_TO_INDEX(i)], vk_i);
     }
-    mpz_clears(s_i, vk_i, divisor, r, vk_v, NULL);
-    clear_poly(poly);
-    
-    TC_MPZ_TO_BYTES(info->public_key->n, n);
-    TC_MPZ_TO_BYTES(info->public_key->e, e);
-    TC_MPZ_TO_BYTES(info->public_key->m, m);
 
-    mpz_clears(pr, qr, p, q, d, e, ll, m, n, NULL);
+    clear_poly(poly);
+    mpz_clears(pr, qr, p, q, d, e, ll, m, n, delta_inv, divisor, r, vk_v, vk_u, s_i, vk_i, NULL);
 
     assert(ks != NULL);
 #ifndef NDEBUG

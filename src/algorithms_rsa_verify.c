@@ -17,13 +17,12 @@ int tc_rsa_verify(bytes_t * signature, bytes_t * doc, key_metainfo_t * info, tc_
 
 	mpz_t c, x, e, n, new_x;
 	mpz_inits(c, x, e, n, new_x, NULL);
-	TC_BYTES_TO_MPZ(c, signature);
 	TC_BYTES_TO_MPZ(x, doc_pkcs1);
+	TC_BYTES_TO_MPZ(c, signature);
 	TC_BYTES_TO_MPZ(e, info->public_key->e);
 	TC_BYTES_TO_MPZ(n, info->public_key->n);
 
 	mpz_powm(new_x, c, e, n);
-
 	int cmp = mpz_cmp(x, new_x);
 
 	tc_clear_bytes(doc_pkcs1);

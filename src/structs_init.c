@@ -57,7 +57,6 @@ public_key_t * tc_init_public_key() {
     public_key_t * pk = alloc(sizeof(public_key_t));
 
     pk->n = tc_init_bytes(NULL, 0);
-    pk->m = tc_init_bytes(NULL, 0);
     pk->e = tc_init_bytes(NULL, 0);
 
     return pk;
@@ -65,7 +64,7 @@ public_key_t * tc_init_public_key() {
 
 
 void tc_clear_public_key(public_key_t * pk) {
-    tc_clear_bytes_n(pk->e, pk->m, pk->n, NULL);
+    tc_clear_bytes_n(pk->e, pk->n, NULL);
     free(pk);
 }
 
@@ -81,6 +80,7 @@ key_metainfo_t *tc_init_key_metainfo(uint16_t k, uint16_t l) {
     metainfo->public_key = tc_init_public_key();
     metainfo->vk_i = tc_init_bytes_array(l);
     metainfo->vk_v = tc_init_bytes(NULL, 0);
+    metainfo->vk_u = tc_init_bytes(NULL, 0);
 
     assert(metainfo != NULL);
     return metainfo;
@@ -118,6 +118,7 @@ void tc_clear_key_metainfo(key_metainfo_t * info) {
 	assert(info != NULL);
     tc_clear_public_key(info->public_key);
     tc_clear_bytes(info->vk_v);
+    tc_clear_bytes(info->vk_u);
     tc_clear_bytes_array(info->vk_i, info->l);
     free(info);
 }

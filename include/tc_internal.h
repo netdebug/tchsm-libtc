@@ -7,7 +7,6 @@
 
 struct public_key {
     bytes_t * n;
-    bytes_t * m;
     bytes_t * e;
 };
 
@@ -16,6 +15,7 @@ struct key_metainfo {
     uint16_t k;
     uint16_t l;
     bytes_t * vk_v;
+    bytes_t * vk_u;
     bytes_t * vk_i;
 };
 
