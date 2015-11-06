@@ -5,11 +5,38 @@
 #define _POSIX_C_SOURCE 200809L
 
 #include "tc.h"
+#include "tc_internal.h"
 #include "unit_test.h"
 
 #include <stdlib.h>
 #include <string.h>
 #include <check.h>
+
+#if 0
+static int bytes_cmp(bytes_t *a, bytes_t *b) {
+    return memcmp(a->data, b->data, a->data_len);
+}
+static int key_metainfo_eq(key_metainfo_t *a, key_metainfo_t *b) {
+    if (bytes_cmp(a->public_key->n, b->public_key->n) != 0) {
+        return 0;
+    }
+    if (bytes_cmp(a->public_key->e, b->public_key->e) != 0) {
+        return 0;
+    }
+    if (a->k != b->k) {
+        return 0;
+    }
+    if (a->l != b->l) {
+        return 0;
+    }
+    if (bytes_cmp(a->vk_v, b->vk_v) != 0) {
+        return 0;
+    }
+
+
+    return 1;
+}
+#endif
 
 START_TEST(test_complete_sign){
 
@@ -20,9 +47,11 @@ START_TEST(test_complete_sign){
     /* Then serialize them */
     int l = tc_key_meta_info_l(info);
     char * serialized_shares[l];
+    char * serialized_info;
     for(int i=0; i<l; i++) {
         serialized_shares[i] = tc_serialize_key_share(shares[i]);
     }    
+    serialized_info = tc_serialize_key_metainfo(info);
     
     /* And finally clear the original ones */
     tc_clear_key_shares(shares, info);
@@ -35,12 +64,16 @@ START_TEST(test_complete_sign){
 
     for (int i=0; i<l; i++) {
         key_share_t * share = tc_deserialize_key_share(serialized_shares[i]);	
-        signature_share_t * signature = tc_node_sign(share, doc_pkcs1, info); 
-        int verify = tc_verify_signature(signature, doc_pkcs1, info);
+        key_metainfo_t * minfo = tc_deserialize_key_metainfo(serialized_info);
+	
+        
+        signature_share_t * signature = tc_node_sign(share, doc_pkcs1, minfo); 
+        int verify = tc_verify_signature(signature, doc_pkcs1, minfo);
         ck_assert_msg(verify, "1st Signature Share verification.");
         serialized_signatures[i] = tc_serialize_signature_share(signature);
 	tc_clear_signature_share(signature);
         tc_clear_key_share(share);
+        tc_clear_key_metainfo(minfo);
     }
 
     signature_share_t * signatures[l];
@@ -62,7 +95,10 @@ START_TEST(test_complete_sign){
         tc_clear_signature_share(signatures[i]);
         free(serialized_shares[i]);
     }
+    free(serialized_info);
     tc_clear_key_metainfo(info);
+    tc_clear_bytes(doc);
+    tc_clear_bytes(doc_pkcs1);
 }
 END_TEST
 

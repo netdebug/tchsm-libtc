@@ -100,9 +100,14 @@ char *tc_serialize_key_metainfo(const key_metainfo_t *kmi) {
     buffer_size += sizeof net_l;
 
     bytes_t *vk_v = kmi->vk_v;
+    bytes_t *vk_u = kmi->vk_u;
 
     buffer_size += sizeof vk_v->data_len; 
     buffer_size += vk_v->data_len;
+ 
+    buffer_size += sizeof vk_u->data_len;
+    buffer_size += vk_u->data_len;
+
 
     for (int i = 0; i < kmi->l; i++) {
         buffer_size += sizeof(kmi->vk_i[i].data_len);
@@ -117,6 +122,7 @@ char *tc_serialize_key_metainfo(const key_metainfo_t *kmi) {
     SERIALIZE_VARIABLE(p, net_k);
     SERIALIZE_VARIABLE(p, net_l);
     SERIALIZE_BYTES(p, vk_v);
+    SERIALIZE_BYTES(p, vk_u);
     for (int i = 0; i < kmi->l; i++) {
         bytes_t *v = kmi->vk_i + i;
         SERIALIZE_BYTES(p, v);
@@ -124,6 +130,7 @@ char *tc_serialize_key_metainfo(const key_metainfo_t *kmi) {
 
     bytes_t bs = {buffer, buffer_size};
     char *b64 = tc_bytes_b64(&bs);
+    tc_clear_bytes(pk);
     free(buffer);
 
     return b64;
@@ -222,6 +229,7 @@ key_metainfo_t *tc_deserialize_key_metainfo(const char *b64) {
 
     key_metainfo_t *kmi = tc_init_key_metainfo(k, l);
     DESERIALIZE_BYTES(kmi->vk_v, p);
+    DESERIALIZE_BYTES(kmi->vk_u, p);
     // We have to do this here, because init_key_meta_info initializes the vk_i array.
     for (int i = 0; i < l; i++) {
         bytes_t *v = kmi->vk_i + i;
@@ -232,6 +240,7 @@ key_metainfo_t *tc_deserialize_key_metainfo(const char *b64) {
     DESERIALIZE_BYTES(kmi->public_key->e, p);
 
     tc_clear_bytes(buffer);
+    tc_clear_bytes(pk);
     return kmi;
 }
 
