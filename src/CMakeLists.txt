@@ -34,3 +34,6 @@ target_link_libraries(tc ${GMP_LIBRARIES} ${MHASH_LIBRARIES})
 
 add_executable(main main.c)
 target_link_libraries(main tc)
+
+install(TARGETS tc DESTINATION lib)
+install(FILES "${PROJECT_SOURCE_DIR}/include/tc.h" DESTINATION include)
