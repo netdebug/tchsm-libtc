@@ -30,9 +30,14 @@ set(SOURCE_FILES
 
 add_library(tc SHARED ${SOURCE_FILES} )
 target_link_libraries(tc ${GMP_LIBRARIES} ${MHASH_LIBRARIES})
+set_property(TARGET tc PROPERTY C_STANDARD 11)
+set_property(TARGET tc PROPERTY C_STANDARD_REQUIRED_ON 11)
 
 add_executable(main main.c)
 target_link_libraries(main tc)
+set_property(TARGET main PROPERTY C_STANDARD 11)
+set_property(TARGET main PROPERTY C_STANDARD_REQUIRED_ON 11)
+
 
 install(TARGETS tc DESTINATION lib)
-install(FILES "${PROJECT_SOURCE_DIR}/include/tc.h" "${PROJECT_SOURCE_DIR}/include/tc_internal.h" DESTINATION include)
+install(FILES "${PROJECT_SOURCE_DIR}/include/tc.h" DESTINATION include)
