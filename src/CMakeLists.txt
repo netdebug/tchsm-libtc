@@ -1,7 +1,6 @@
 cmake_minimum_required(VERSION 2.8)
 
 include_directories(${tclib_SOURCE_DIR}/include)
-#set(CMAKE_PREFIX_PATH "/opt/local")
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c11 -g")
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${tclib_SOURCE_DIR}/cmake)
@@ -29,11 +28,11 @@ set(SOURCE_FILES
     poly.c
     random.c)
 
-add_library(tc STATIC ${SOURCE_FILES} )
+add_library(tc SHARED ${SOURCE_FILES} )
 target_link_libraries(tc ${GMP_LIBRARIES} ${MHASH_LIBRARIES})
 
 add_executable(main main.c)
 target_link_libraries(main tc)
 
 install(TARGETS tc DESTINATION lib)
-install(FILES "${PROJECT_SOURCE_DIR}/include/tc.h" DESTINATION include)
+install(FILES "${PROJECT_SOURCE_DIR}/include/tc.h" "${PROJECT_SOURCE_DIR}/include/tc_internal.h" DESTINATION include)
