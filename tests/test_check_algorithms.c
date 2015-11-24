@@ -42,7 +42,7 @@ START_TEST(test_complete_sign){
 
     /* First generate the keys */
     key_metainfo_t * info;
-    key_share_t ** shares = tc_generate_keys(&info, 1024, 3, 5);
+    key_share_t ** shares = tc_generate_keys(&info, 1024, 3, 5, NULL);
 
     /* Then serialize them */
     int l = tc_key_meta_info_l(info);

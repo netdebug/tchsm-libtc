@@ -13,7 +13,7 @@ static int bytes_eq(bytes_t *a, bytes_t *b) {
 START_TEST(test_serialization_key_share)
     {
         key_metainfo_t *info;
-        key_share_t **shares = tc_generate_keys(&info, 512, 3, 5);
+        key_share_t **shares = tc_generate_keys(&info, 512, 3, 5, NULL);
 
         char *share0_b64 = tc_serialize_key_share(shares[0]);
         key_share_t *share0 = tc_deserialize_key_share(share0_b64);
@@ -31,7 +31,7 @@ END_TEST
 
 START_TEST(test_serialization_key_share_error) {
         key_metainfo_t *info;
-        key_share_t **shares = tc_generate_keys(&info, 512, 3, 5);
+        key_share_t **shares = tc_generate_keys(&info, 512, 3, 5, NULL);
 
         char *share0_b64 = tc_serialize_key_share(shares[0]);
         share0_b64[0] = '0';
@@ -48,7 +48,7 @@ END_TEST
 START_TEST(test_serialization_signature_share)
     {
         key_metainfo_t *info;
-        key_share_t **shares = tc_generate_keys(&info, 512, 3, 5);
+        key_share_t **shares = tc_generate_keys(&info, 512, 3, 5, NULL);
 
         const char *message = "Hola mundo";
         bytes_t *doc = tc_init_bytes(strdup(message), strlen(message));
@@ -75,7 +75,7 @@ END_TEST
 START_TEST(test_serialization_key_metainfo)
     {
         key_metainfo_t *mi;
-        key_share_t **shares = tc_generate_keys(&mi, 512, 3, 5);
+        key_share_t **shares = tc_generate_keys(&mi, 512, 3, 5, NULL);
 
         char *mi_b64 = tc_serialize_key_metainfo(mi);
         key_metainfo_t *new_mi = tc_deserialize_key_metainfo(mi_b64);

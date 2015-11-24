@@ -38,15 +38,23 @@ typedef enum tc_hash_type tc_hash_type_t;
 bytes_t *tc_init_bytes(void *bs, size_t len);
 
 /**
+ * @ param bs pointer to data
+ * @ param len data stored in len
  *
+ * @ return a new bytes_t structure that stores a copy of bs with its len
+ */
+bytes_t *tc_init_bytes_copy(void *bs, size_t len);
+
+/**
  * @ param out stores the corresponding key_metainfo to the key_share lists.
  * @ param bit_size the bit_size of the returned key_shares
  * @ param k the number of nodes needed to sign
- * @ param ll the number of nodes
+ * @ param l the number of nodes
+ * @ param e the public exponent, and e > l. May be NULL to let the function generate one.
  *
  * @ result a key_share array of ll items or NULL under error condition.
  */
-key_share_t **tc_generate_keys(key_metainfo_t **out, size_t bit_size, uint16_t k, uint16_t ll);
+key_share_t **tc_generate_keys(key_metainfo_t **out, size_t bit_size, uint16_t k, uint16_t l, bytes_t * e);
 
 signature_share_t *tc_node_sign(const key_share_t *share, const bytes_t *doc, const key_metainfo_t *info);
 
@@ -104,6 +112,8 @@ key_metainfo_t *tc_deserialize_key_metainfo(const char *b64);
 
 /* Destructors */
 void tc_clear_bytes(bytes_t *bytes);
+
+void* tc_release_bytes(bytes_t *bytes, uint32_t *len);
 
 void tc_clear_bytes_n(bytes_t *bytes, ...);
 

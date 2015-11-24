@@ -2,6 +2,7 @@
 #include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include "tc_internal.h"
 
@@ -22,6 +23,14 @@ bytes_t * tc_init_bytes(void * bs, size_t len) {
     return out;
 }
 
+bytes_t *tc_init_bytes_copy(void *bs, size_t len) {
+    bytes_t * out = alloc(sizeof(bytes_t));
+    out->data = memcpy(malloc(len), bs, len);
+    out->data_len = len;
+
+    return out;
+}
+
 static bytes_t * tc_init_bytes_array(size_t len) {
     bytes_t * bytes_array =  alloc(len*sizeof(bytes_t));
     return bytes_array;
@@ -30,6 +39,16 @@ static bytes_t * tc_init_bytes_array(size_t len) {
 void tc_clear_bytes(bytes_t * bytes) {
     free(bytes->data);
     free(bytes);
+}
+
+void* tc_release_bytes(bytes_t *bytes, uint32_t *len) {
+    if(len != NULL) {
+        *len = bytes->data_len;
+    }
+    void *data = bytes->data;
+    free(bytes);
+
+    return data;
 }
 
 static void tc_clear_bytes_array(bytes_t * b, int count) {

@@ -47,7 +47,7 @@ int main(int argc, char ** argv)
     char * b64;
 
     key_metainfo_t * info;
-    key_share_t ** shares = tc_generate_keys(&info, 512, k, l);
+    key_share_t ** shares = tc_generate_keys(&info, 512, k, l, NULL);
 
     bytes_t * doc = tc_init_bytes( message, strlen(message));
     bytes_t * doc_pkcs1 = tc_prepare_document(doc, TC_SHA256, info);

@@ -38,12 +38,8 @@ void generate_safe_prime(mpz_t out, int bit_len, random_fn random) {
 
 /**
  * Generates ll shares, with a threshold of k.
- *
- * \param out a key share array with space for at least info->l shares, without initialization.
- * \param info a pointer to the meta info of the key set to be generated
- * \param public_key a pointer to a initialized but not defined public_key
  */
-key_share_t **tc_generate_keys(key_metainfo_t **out, size_t bit_size, uint16_t k, uint16_t l) {
+key_share_t **tc_generate_keys(key_metainfo_t **out, size_t bit_size, uint16_t k, uint16_t l, bytes_t *public_e) {
     /* Preconditions */
     assert(out != NULL);
     assert(bit_size >= 512 && bit_size <= 8192);
@@ -78,11 +74,19 @@ key_share_t **tc_generate_keys(key_metainfo_t **out, size_t bit_size, uint16_t k
     TC_MPZ_TO_BYTES(info->public_key->n, n);
 
     mpz_set_ui(ll, l);
-    if (mpz_cmp_ui(ll, F4) <= 0) { // group_size < F4
-	mpz_set_ui(e, F4);
-    } else {
-	random_prime(e, mpz_sizeinbase(ll, 2) + 1, random_dev);
+
+    int e_set = 0;
+    if (public_e != NULL) {
+        TC_BYTES_TO_MPZ(e, public_e);
+        if (mpz_probab_prime_p(e, 25) && mpz_cmp(ll, e) < 0) {
+            e_set = !e_set;
+        }
     }
+
+    if (!e_set){
+        mpz_set_ui(e, F4); // l is always less than 65537 (l is an uint16_t)
+    }
+
     TC_MPZ_TO_BYTES(info->public_key->e, e);
 
     // d = e^{-1} mod m
