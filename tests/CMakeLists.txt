@@ -24,11 +24,13 @@ set(CMAKE_THREAD_PREFER_PTHREAD TRUE)
 find_package(Threads REQUIRED)
 
 set(SOURCE_FILES
-    test_algorithms_generate_keys.c  
-    test_algorithms_join_signatures.c  
-    test.c  
-    test_check_algorithms.c  
+    test_algorithms_generate_keys.c
+    test_algorithms_join_signatures.c
+    test.c
+    test_check_algorithms.c
     test_structs_serialization.c test_base64.c test_poly.c)
 
 add_executable(tests ${SOURCE_FILES} )
 target_link_libraries(tests tc ${GMP_LIBRARIES} ${MHASH_LIBRARIES} ${CHECK_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT})
+add_test(NAME tests COMMAND tests)
+add_dependencies(check tests)
