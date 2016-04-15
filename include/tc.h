@@ -18,21 +18,25 @@ struct bytes {
 typedef struct bytes bytes_t;
 
 /**
+ * @struct public_key
  * @brief Structure that represents a standard RSA public key. Used to verify signatures.
  */
 typedef struct public_key public_key_t;
 
 /**
+ * @struct key_metainfo
  * @brief Structure that represents the data about a key share, including its public key.
  */
 typedef struct key_metainfo key_metainfo_t;
 
 /**
+ * @struct key_share
  * @brief Structure that represents one key share, to be used to generate a signature share.
  */
 typedef struct key_share key_share_t;
 
 /**
+ * @struct signature_share
  * @brief Structure that represents a signature share, to be joined generating a standard RSA signatures.
  */
 typedef struct signature_share signature_share_t;
