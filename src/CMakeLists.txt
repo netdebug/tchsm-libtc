@@ -6,7 +6,6 @@ set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c11 -g")
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${tclib_SOURCE_DIR}/cmake)
 include(FindGMP)
 include(FindMHASH)
-include(FindCheck)
 
 find_package(GMP REQUIRED)
 message("gmp include ${GMP_INCLUDE_DIR}")

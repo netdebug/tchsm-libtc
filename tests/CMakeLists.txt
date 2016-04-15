@@ -17,8 +17,8 @@ find_package(MHASH REQUIRED)
 include_directories(${MHASH_INCLUDE_DIR})
 
 find_package(Check REQUIRED)
-include_directories(${CHECK_INCLUDE_DIRS})
-link_directories(${CHECK_LIBRARY_DIRS})
+include_directories(${CHECK_INCLUDE_DIR})
+link_directories(${CHECK_LIBRARIES})
 
 set(CMAKE_THREAD_PREFER_PTHREAD TRUE)
 find_package(Threads REQUIRED)

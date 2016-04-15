@@ -8,17 +8,38 @@
 extern "C" {
 #endif
 
+/**
+ * @brief Structure that's stores a pointer that points to data_len bytes.
+ */
 struct bytes {
-    void *data;
-    uint32_t data_len;
+    void *data; /**< Pointer to data */
+    uint32_t data_len; /**< Size in bytes of data */
 };
 typedef struct bytes bytes_t;
 
+/**
+ * @brief Structure that represents a standard RSA public key. Used to verify signatures.
+ */
 typedef struct public_key public_key_t;
+
+/**
+ * @brief Structure that represents the data about a key share, including its public key.
+ */
 typedef struct key_metainfo key_metainfo_t;
+
+/**
+ * @brief Structure that represents one key share, to be used to generate a signature share.
+ */
 typedef struct key_share key_share_t;
+
+/**
+ * @brief Structure that represents a signature share, to be joined generating a standard RSA signatures.
+ */
 typedef struct signature_share signature_share_t;
 
+/**
+ * @brief Hash functions to be used when preparing a document to be signed.
+ */
 enum tc_hash_type {
     TC_SHA256,
     TC_NONE
@@ -30,64 +51,177 @@ typedef enum tc_hash_type tc_hash_type_t;
 
 
 /**
- * @ param bs pointer to data
- * @ param len data stored in len
+ * Function that allocates and initialize a bytes_t structure that contains len bytes in the bs pointer.
+ * The bytes_t structure will own the data pointed by bs. Any bytes_t structure initialized by this function
+ * should be deinitialized by tc_clear_bytes.
  *
- * @ return a new bytes_t structure that stores bs with its len
+ * @param [in] bs pointer to data
+ * @param [in] len data stored in len
+ *
+ * @return a new bytes_t structure that stores bs with its len
  */
 bytes_t *tc_init_bytes(void *bs, size_t len);
 
 /**
- * @ param bs pointer to data
- * @ param len data stored in len
+ * Function that allocates and initialize a bytes_t structure that contains a copy of the len bytes
+ * stored by the bs pointer. The data stored in the structure is a copy of the original data. Any bytes_t
+ * structure initialized by this function should be deinitialized by tc_clear_bytes.
  *
- * @ return a new bytes_t structure that stores a copy of bs with its len
+ * @param [in] bs pointer to data
+ * @param [in] len data stored in len
+ *
+ * @return a new bytes_t structure that stores a copy of bs with its len
  */
 bytes_t *tc_init_bytes_copy(void *bs, size_t len);
 
 /**
- * @ param out stores the corresponding key_metainfo to the key_share lists.
- * @ param bit_size the bit_size of the returned key_shares
- * @ param k the number of nodes needed to sign
- * @ param l the number of nodes
- * @ param e the public exponent, and e > l. May be NULL to let the function generate one.
+ * Function that generates an array with l key shares. The bit_size parameter is used to generates
+ * key shares with a security level equivalent to a RSA private of that size. The generated 
+ * key shares have a threshold parameter of k. This means that k valid signatures are needed to sign.
  *
- * @ result a key_share array of ll items or NULL under error condition.
+ * @param [out] metainfo stores the corresponding key_metainfo to the key_share array.
+ * @param [in] bit_size the bit_size of the returned key_shares
+ * @param [in] k the number of nodes needed to sign
+ * @param [in] l the number of nodes
+ * @param [in] e the public exponent, and e > l. May be NULL to let the function generate one.
+ *
+ * @return a key_share array of ll items or NULL under error condition.
  */
-key_share_t **tc_generate_keys(key_metainfo_t **out, size_t bit_size, uint16_t k, uint16_t l, bytes_t * e);
+key_share_t **tc_generate_keys(key_metainfo_t **metainfo, size_t bit_size, uint16_t k, uint16_t l, bytes_t * e);
 
+/**
+ * Function that generates a signature share using a key share. A standard RSA signature is generated using several
+ * signature shares. The document to be signed should be prepared (hashed and padded) before using this function.
+ * In order to prepare the document we provide the tc_prepare_document function. But any other padder function may
+ * be used. For example, the Botan library provides a complete set of procedures that provide that functionality.
+ *
+ * @param [in] share the key share to be used in the signature operation.
+ * @param [in] doc the document to be signed.
+ * @param [in] the metainfo of the key shares array.
+ *
+ * @return a signature share.
+ */
 signature_share_t *tc_node_sign(const key_share_t *share, const bytes_t *doc, const key_metainfo_t *info);
 
+/**
+ * Function that takes several signature shares (at least the threshold number stored in info), and generates a 
+ * standard RSA signature.
+ *
+ * @param [in] signatures an array of the needed number of signature shares to be joined.
+ * @param [in] document the prepared document to be signed.
+ * @param [in] info the key shares that were used to sign metainfo.
+ *
+ * @return a bytes_t structure with the regular RSA signature
+ */
 bytes_t *tc_join_signatures(const signature_share_t **signatures, const bytes_t *document, const key_metainfo_t *info);
 
+/**
+ * Function that verifies that a signature share was generated by any key shares that shares the same key metainfo.
+ * That means, any key shares that came from the same key_share array. 
+ *
+ * @param signature the signature to be verified.
+ * @param doc the document used to generate the signature share.
+ * @param info the metainfo of the key shares array used to sign.
+ *
+ * @return 1 if the signature share was generated by any key from the original key shares array. 0 otherwise.
+ */
 int tc_verify_signature(const signature_share_t *signature, const bytes_t *doc, const key_metainfo_t *info);
 
-int tc_rsa_verify(bytes_t *signature, bytes_t *doc, key_metainfo_t *info, tc_hash_type_t hashtype);
-
+/**
+ * Function that hashes and adds the PKCS1 padding to the document to be signed. This function should be only used in testing
+ * environments. In production environments, any function that does the PSS padding should be used. Such functions are
+ * provided by general cryptography suites such as OpenSSL or Botan.
+ *
+ * @param [in] doc the document to be prepared.
+ * @param [in] hash_type the hash function to be used in the document.
+ * @param [in] metainfo the metainfo of the key shares array, with the public key.
+ *
+ * @return the prepared document.
+ */
 bytes_t *tc_prepare_document(const bytes_t *doc, tc_hash_type_t hash_type, const key_metainfo_t *metainfo);
 
+/**
+ * Function that verifies a standard RSA signature using the PKCS1 padding. Should be used only for testing purposed.
+ *
+ * @param [in] the signature to be verified.
+ * @param [in] the signed document.
+ * @param [in] the metainfo of the key shares array.
+ * @param [in] the hash function used in the PKCS1 padding.
+ *
+ * @return 1 if the signature verifies the document, 0 otherwise.
+ */
+int tc_rsa_verify(bytes_t *signature, bytes_t *doc, key_metainfo_t *info, tc_hash_type_t hashtype);
+
+
 /* Getters */
+
+/**
+ * @param [in] i the metainfo of the key shares array.
+ *
+ * @return the threshold number of the key shares array.
+ */
 int tc_key_meta_info_k(const key_metainfo_t *i);
 
+/**
+ * @param [in] i the metainfo of the key shares array.
+ *
+ * @return the number of key shares in the originally generated key shares array.
+ */
 int tc_key_meta_info_l(const key_metainfo_t *i);
 
+/**
+ * @param [in] i the metainfo of the key shares array.
+ *
+ * @return the public key structure of the key shares array
+ */
 const public_key_t *tc_key_meta_info_public_key(const key_metainfo_t *i);
 
+/**
+ * @param [in] k a key share.
+ *
+ * @return the id of the node that stores that key share
+ */
 int tc_key_share_id(const key_share_t *k);
 
+/**
+ * @param [in] pk a public key.
+ *
+ * @return the modulus of the RSA public key.
+ */
 const bytes_t *tc_public_key_n(const public_key_t *pk);
 
+/**
+ * @param [in] pk a public key.
+ *
+ * @return the public exponent of the RSA public key.
+ */
 const bytes_t *tc_public_key_e(const public_key_t *pk);
 
+/**
+ * @param [in] s a signature share.
+ *
+ * @return the id of the node that generated the signature share.
+ */
 int tc_signature_share_id(const signature_share_t *s);
 
 
 /* Serializers */
+
+/**
+ * @param [in] b a bytes_t structure.
+ *
+ * @returns a C string with the data of bytes serialized in the Base64 format.
+ */
 char *tc_bytes_b64(const bytes_t *b);
 
-bytes_t *tc_b64_bytes(const char *b);
+/**
+ * @param [in] s a C string in the Base64 format.
+ *
+ * @returns a bytes_t structure with the binary data in s.
+ */
+bytes_t *tc_b64_bytes(const char *s);
 
-/**** Serialization Format
+/* *** Serialization Format ***
  * The colon means concatenation.
  * KeyShare:
  *  Base64(version :: id :: n_len :: n :: si_len :: si)
@@ -98,31 +232,76 @@ bytes_t *tc_b64_bytes(const char *b);
  * KeyMetainfo:
  *  Base64(version :: pk_len :: pk :: k :: l :: vk_len :: vk :: v0_len :: v0 :: ... :: v(l-1)_len :: v(l-1))
  */
+
+/**
+ * Serializes a key share as a C string in the Base64 format
+ */
 char *tc_serialize_key_share(const key_share_t *ks);
 
+/**
+ * Serializes a signature share as a C string in the Base64 format
+ */
 char *tc_serialize_signature_share(const signature_share_t *ss);
 
+/**
+ * Serializes a key shares array metainfo as a C string in the Base64 format
+ */
 char *tc_serialize_key_metainfo(const key_metainfo_t *kmi);
 
+/**
+ * Deserializes a key share from a C string in the Base64 format
+ */
 key_share_t *tc_deserialize_key_share(const char *b64);
 
+/**
+ * Deserializes a signature share from a C string in the Base64 format
+ */
 signature_share_t *tc_deserialize_signature_share(const char *b64);
 
+/**
+ * Deserializes a key share from a C string in the Base64 format
+ */
 key_metainfo_t *tc_deserialize_key_metainfo(const char *b64);
 
 /* Destructors */
+
+/**
+ * Clears the memory stored in bytes and its structure.
+ */
 void tc_clear_bytes(bytes_t *bytes);
 
+/**
+ * Clears just the bytes structure, and returns a pointer to bytes' data.
+ * @param [in] bytes the bytes_t structure to be freed.
+ * @param [out] len a pointer to store the length of the data stored in bytes.
+ *
+ * @result a pointer to the data stored by bytes
+ */
 void* tc_release_bytes(bytes_t *bytes, uint32_t *len);
 
+/**
+ * Clears several bytes_t structures at once. The parameter list should end with a NULL sentinel.
+ */
 void tc_clear_bytes_n(bytes_t *bytes, ...);
 
+/**
+ * Clears the memory of the structure
+ */
 void tc_clear_key_metainfo(key_metainfo_t *info);
 
+/**
+ * Clears the memory of the structure
+ */
 void tc_clear_signature_share(signature_share_t *ss);
 
+/**
+ * Clears the memory of the structure
+ */
 void tc_clear_key_share(key_share_t *share);
 
+/**
+ * Clears the memory of all the key shares in the shares structure
+ */
 void tc_clear_key_shares(key_share_t **shares, key_metainfo_t *info);
 
 #ifdef __cplusplus
