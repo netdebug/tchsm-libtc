@@ -31,6 +31,6 @@ set(SOURCE_FILES
     test_structs_serialization.c test_base64.c test_poly.c)
 
 add_executable(tests ${SOURCE_FILES} )
-target_link_libraries(tests tc ${GMP_LIBRARIES} ${MHASH_LIBRARIES} ${CHECK_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT})
+target_link_libraries(tests tc ${GMP_LIBRARIES} ${MHASH_LIBRARIES} ${CHECK_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT} m rt)
 add_test(NAME tests COMMAND tests)
 add_dependencies(check tests)
