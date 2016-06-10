@@ -38,14 +38,15 @@ static int key_metainfo_eq(key_metainfo_t *a, key_metainfo_t *b) {
 }
 #endif
 
-START_TEST(test_complete_sign){
+static void complete_sign(int threshold, int nodes, size_t key_size, int expected_verify) {
 
     /* First generate the keys */
     key_metainfo_t * info;
-    key_share_t ** shares = tc_generate_keys(&info, 1024, 3, 5, NULL);
+    key_share_t ** shares = tc_generate_keys(&info, key_size, threshold, nodes, NULL);
 
     /* Then serialize them */
     int l = tc_key_meta_info_l(info);
+    ck_assert_int_eq(l, nodes);
     char * serialized_shares[l];
     char * serialized_info;
     for(int i=0; i<l; i++) {
@@ -87,7 +88,7 @@ START_TEST(test_complete_sign){
     bytes_t * rsa_signature = tc_join_signatures((void*) signatures, doc_pkcs1, info);
 
     int verify = tc_rsa_verify(rsa_signature, doc, info, TC_SHA256);
-    ck_assert_msg(verify, "RSA Signature verification.");
+    ck_assert_msg(verify == expected_verify, "RSA Signature verification.");
 
     tc_clear_bytes(rsa_signature);
     for(int i=0; i<l; i++) {
@@ -100,11 +101,25 @@ START_TEST(test_complete_sign){
     tc_clear_bytes(doc);
     tc_clear_bytes(doc_pkcs1);
 }
+
+START_TEST(test_complete_sign_1_1){
+    complete_sign(1, 1, 512, 0);
+}
+END_TEST
+
+START_TEST(test_complete_sign){
+    for (int nodes=2; nodes <= 11; nodes += 3) {
+	complete_sign(nodes/2 + 1, nodes, 512, 1);
+	complete_sign(nodes, nodes, 512, 1);
+    }
+}
 END_TEST
 
 TCase *tc_test_case_system_test() {
     TCase *tc = tcase_create("System test");
     tcase_set_timeout(tc, 500);
+    tcase_add_test(tc, test_complete_sign_1_1);
+    tcase_add_test(tc, test_complete_sign_1_2);
     tcase_add_test(tc, test_complete_sign);
     return tc;
 }
