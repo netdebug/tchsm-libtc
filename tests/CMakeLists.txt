@@ -4,6 +4,10 @@ include_directories(${tclib_SOURCE_DIR}/include)
 link_directories(${PROJECT_BINARY_DIR})
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c11 -g")
 
+if(${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
+  set(REALTIME_LIBRARIES "rt")
+endif()
+
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${tclib_SOURCE_DIR}/cmake)
 include(FindGMP)
 include(FindMHASH)
@@ -31,6 +35,6 @@ set(SOURCE_FILES
     test_structs_serialization.c test_base64.c test_poly.c)
 
 add_executable(tests ${SOURCE_FILES} )
-target_link_libraries(tests tc ${GMP_LIBRARIES} ${MHASH_LIBRARIES} ${CHECK_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT} m rt)
+target_link_libraries(tests tc ${GMP_LIBRARIES} ${MHASH_LIBRARIES} ${CHECK_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT} m ${REALTIME_LIBRARIES})
 add_test(NAME tests COMMAND tests)
 add_dependencies(check tests)
