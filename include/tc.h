@@ -7,9 +7,9 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-
+    
 /**
- * @brief Structure that's stores a pointer that points to data_len bytes.
+ * @brief Structure that's stores a pointer that points to data_len bytes, data is big-endian.
  */
 struct bytes {
     void *data; /**< Pointer to data */

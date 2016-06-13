@@ -8,35 +8,14 @@
 #include "tc_internal.h"
 #include "unit_test.h"
 
+#include <gmp.h>
 #include <stdlib.h>
 #include <string.h>
 #include <check.h>
 
-#if 0
 static int bytes_cmp(bytes_t *a, bytes_t *b) {
     return memcmp(a->data, b->data, a->data_len);
 }
-static int key_metainfo_eq(key_metainfo_t *a, key_metainfo_t *b) {
-    if (bytes_cmp(a->public_key->n, b->public_key->n) != 0) {
-        return 0;
-    }
-    if (bytes_cmp(a->public_key->e, b->public_key->e) != 0) {
-        return 0;
-    }
-    if (a->k != b->k) {
-        return 0;
-    }
-    if (a->l != b->l) {
-        return 0;
-    }
-    if (bytes_cmp(a->vk_v, b->vk_v) != 0) {
-        return 0;
-    }
-
-
-    return 1;
-}
-#endif
 
 static void complete_sign(int threshold, int nodes, size_t key_size, int expected_verify) {
 
@@ -115,12 +94,34 @@ START_TEST(test_complete_sign){
 }
 END_TEST
 
+START_TEST(test_endianess){
+    /* Test that output is Big Endian */
+    uint8_t data[] = { 1, 0, 0 };
+    uint32_t data_len = sizeof(data)/sizeof(data[0]);
+    bytes_t bs1 = { .data = data, .data_len = data_len };
+
+    mpz_t number;
+    mpz_init(number);
+    
+    TC_BYTES_TO_MPZ(number, &bs1);
+    ck_assert(mpz_cmp_ui(number, 65536) == 0);
+    
+    mpz_set_ui(number, 65536);
+    bytes_t bs2;
+    TC_MPZ_TO_BYTES(&bs2, number);
+
+    ck_assert(bytes_cmp(&bs1, &bs2) == 0);
+    mpz_clear(number);
+    free(bs2.data);
+}
+END_TEST
+
 TCase *tc_test_case_system_test() {
     TCase *tc = tcase_create("System test");
     tcase_set_timeout(tc, 500);
     tcase_add_test(tc, test_complete_sign_1_1);
-    tcase_add_test(tc, test_complete_sign_1_2);
     tcase_add_test(tc, test_complete_sign);
+    tcase_add_test(tc, test_endianess);
     return tc;
 }
 
