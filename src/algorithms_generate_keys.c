@@ -17,8 +17,13 @@ void generate_safe_prime(mpz_t out, int bit_len, random_fn random) {
     mpz_inits(p, q, r, t1, NULL);
     int q_composite, r_composite;
 
+    /* The random prime has to be at most 2 bits less than the
+     * expected safe prime. The reason is that we try for
+     * 2 * random_prime + 1 to be prime too. If that's prime,
+     * the resulting safe prime may have 2 more bits. */
+    int random_prime_bit_len = bit_len - 2;
     do {
-	random_prime(p, bit_len, random);
+	random_prime(p, random_prime_bit_len, random);
 	mpz_sub_ui(t1, p, 1);
 	mpz_fdiv_q_ui(q, t1, 2);
 
