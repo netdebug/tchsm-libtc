@@ -75,7 +75,7 @@ END_TEST
 START_TEST(test_serialization_key_metainfo)
     {
         key_metainfo_t *mi;
-        key_share_t **shares = tc_generate_keys(&mi, 1024, 3, 5, NULL);
+        key_share_t **shares = tc_generate_keys(&mi, 512, 3, 5, NULL);
 
         char *mi_b64 = tc_serialize_key_metainfo(mi);
         key_metainfo_t *new_mi = tc_deserialize_key_metainfo(mi_b64);
