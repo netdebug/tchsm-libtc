@@ -101,6 +101,7 @@ END_TEST
 
 TCase *tc_test_case_serialization() {
     TCase *tc = tcase_create("poly.c");
+    tcase_set_timeout(tc, 10);
     tcase_add_test(tc, test_serialization_key_share);
     tcase_add_test(tc, test_serialization_key_share_error);
     tcase_add_test(tc, test_serialization_signature_share);

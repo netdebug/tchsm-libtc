@@ -56,7 +56,7 @@ START_TEST(encode_decode)
         char *b64 = tc_bytes_b64(&bs);
 
         bytes_t *new_bs = tc_b64_bytes(b64);
-        memcmp(b, new_bs->data, 10);
+        ck_assert_msg(memcmp(b, new_bs->data, 10) == 0, "encoded-decoded message is different from original\n");
 
         free(b64);
         tc_clear_bytes(new_bs);
