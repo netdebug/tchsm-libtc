@@ -54,7 +54,7 @@ key_share_t **tc_generate_keys(key_metainfo_t **out, size_t bit_size, uint16_t k
     static const int F4 = 65537; // Fermat fourth number.
 
     size_t p_prime_size = (bit_size + 1) / 2;
-    size_t q_prime_size = bit_size - p_prime_size;
+    size_t q_prime_size = bit_size - p_prime_size - 1;
 
     mpz_t pr, qr, p, q, d, e, ll, m, n, delta_inv, divisor, r, vk_v, vk_u, s_i, vk_i;
     mpz_inits(pr, qr, p, q, d, e, ll, m, n, delta_inv, divisor, r, vk_v, vk_u, s_i, vk_i, NULL);
