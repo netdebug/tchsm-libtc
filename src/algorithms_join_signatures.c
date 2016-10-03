@@ -36,7 +36,7 @@ bytes_t * tc_join_signatures(const signature_share_t ** signatures,
     bytes_t * out = tc_init_bytes(NULL, 0);
 
     mpz_t x, n, e, u, delta, e_prime, w, s_i, lambda_k_2, aux, a, b, wa, xb, y;
-#if (__GNU_MP_VERSION >= 5.0)
+#if (__GNU_MP_VERSION >= 5)
     mpz_inits(x, n, e, u, delta, e_prime, w, s_i, lambda_k_2, aux, a, b, wa, xb, y,
 	      NULL);
 #else
@@ -111,7 +111,7 @@ bytes_t * tc_join_signatures(const signature_share_t ** signatures,
 
     TC_MPZ_TO_BYTES(out, y);
 
-#if (__GNU_MP_VERSION >= 5.0)
+#if (__GNU_MP_VERSION >= 5)
     mpz_clears(x, n, e, u, delta, e_prime, w, s_i, lambda_k_2, aux, a, b, wa, xb,
 	       y, NULL);
 #else
