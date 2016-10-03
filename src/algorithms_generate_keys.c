@@ -14,7 +14,14 @@ void generate_safe_prime(mpz_t out, int bit_len, random_fn random) {
     static const int c = 25; /* Number of Miller-Rabbin tests */
 
     mpz_t p, q, r, t1;
+#if (__GNU_MP_VERSION >= 5.0)
     mpz_inits(p, q, r, t1, NULL);
+#else
+    mpz_init(p);
+    mpz_init(q);
+    mpz_init(r);
+    mpz_init(t1);
+#endif
     int q_composite, r_composite;
 
     int random_prime_bit_len = bit_len;
@@ -34,7 +41,14 @@ void generate_safe_prime(mpz_t out, int bit_len, random_fn random) {
 
     mpz_set(out, q_composite ? r : p);
 
+#if (__GNU_MP_VERSION >= 5.0)
     mpz_clears(p, q, r, t1, NULL);
+#else
+    mpz_clear(p);
+    mpz_clear(q);
+    mpz_clear(r);
+    mpz_clear(t1);
+#endif
 }
 
 /**
@@ -57,7 +71,26 @@ key_share_t **tc_generate_keys(key_metainfo_t **out, size_t bit_size, uint16_t k
     size_t q_prime_size = bit_size - p_prime_size - 1;
 
     mpz_t pr, qr, p, q, d, e, ll, m, n, delta_inv, divisor, r, vk_v, vk_u, s_i, vk_i;
+#if (__GNU_MP_VERSION >= 5.0)
     mpz_inits(pr, qr, p, q, d, e, ll, m, n, delta_inv, divisor, r, vk_v, vk_u, s_i, vk_i, NULL);
+#else
+    mpz_init(pr);
+    mpz_init(qr);
+    mpz_init(p);
+    mpz_init(q);
+    mpz_init(d);
+    mpz_init(e);
+    mpz_init(ll);
+    mpz_init(m);
+    mpz_init(n);
+    mpz_init(delta_inv);
+    mpz_init(divisor);
+    mpz_init(r);
+    mpz_init(vk_v);
+    mpz_init(vk_u);
+    mpz_init(s_i);
+    mpz_init(vk_i);
+#endif
 
     generate_safe_prime(p, p_prime_size, random_dev);
     generate_safe_prime(q, q_prime_size, random_dev);
@@ -116,13 +149,13 @@ key_share_t **tc_generate_keys(key_metainfo_t **out, size_t bit_size, uint16_t k
 
     // Generate Polynomial with random coefficients
     poly_t *poly = create_random_poly(d, info->k-1, m);
-    
+
     // Calculate Key Shares
     for(int i=1; i <= info->l; i++) {
 	key_share_t * key_share = ks[TC_ID_TO_INDEX(i)];
 	key_share->id = i;
 	poly_eval_ui(s_i, poly, i);
-	
+
 	mpz_mul(s_i, s_i, delta_inv);
 	mpz_mod(s_i, s_i, m);
 
@@ -134,7 +167,26 @@ key_share_t **tc_generate_keys(key_metainfo_t **out, size_t bit_size, uint16_t k
     }
 
     clear_poly(poly);
+#if (__GNU_MP_VERSION >= 5.0)
     mpz_clears(pr, qr, p, q, d, e, ll, m, n, delta_inv, divisor, r, vk_v, vk_u, s_i, vk_i, NULL);
+#else
+    mpz_clear(pr);
+    mpz_clear(qr);
+    mpz_clear(p);
+    mpz_clear(q);
+    mpz_clear(d);
+    mpz_clear(e);
+    mpz_clear(ll);
+    mpz_clear(m);
+    mpz_clear(n);
+    mpz_clear(delta_inv);
+    mpz_clear(divisor);
+    mpz_clear(r);
+    mpz_clear(vk_v);
+    mpz_clear(vk_u);
+    mpz_clear(s_i);
+    mpz_clear(vk_i);
+#endif
 
     assert(ks != NULL);
 #ifndef NDEBUG
