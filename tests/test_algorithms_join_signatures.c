@@ -13,7 +13,8 @@ START_TEST(test_lagrange_interpolation)
 {
 	const int k = 5;
 	mpz_t out, delta;
-	mpz_inits(out, delta, NULL);
+	mpz_init(out);
+	mpz_init(delta);
 
 	signature_share_t SS[] = { { .id = 1 }, { .id = 2 }, { .id = 3 },
 			{ .id = 4 }, { .id = 5 } };
@@ -32,7 +33,8 @@ START_TEST(test_lagrange_interpolation)
 	lagrange_interpolation(out, 5, k, S, delta);
 	ck_assert(mpz_cmp_si(out, 120) == 0);
 
-	mpz_clears(out, delta, NULL);
+    mpz_clear(out);
+    mpz_clear(delta);
 }END_TEST
 
 TCase * tc_test_case_algorithms_join_signatures_c() {
