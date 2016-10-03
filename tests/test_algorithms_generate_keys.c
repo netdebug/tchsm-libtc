@@ -45,7 +45,7 @@ END_TEST
 START_TEST(test_verify_invert)
     {
         mpz_t p, q, p_, q_, m, e, d, r;
-#if (__GNU_MP_VERSION >= 5.0)
+#if (__GNU_MP_VERSION >= 5)
         mpz_inits(p, q, p_, q_, m, e, d, r, NULL);
 #else
         mpz_init(p);
@@ -76,7 +76,7 @@ START_TEST(test_verify_invert)
 
         ck_assert(mpz_cmp_si(r, 1) == 0);
 
-#if (__GNU_MP_VERSION >= 5.0)
+#if (__GNU_MP_VERSION >= 5)
         mpz_clears(p, q, p_, q_, m, e, d, r, NULL);
 #else
         mpz_clear(p);

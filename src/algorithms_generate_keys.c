@@ -14,7 +14,7 @@ void generate_safe_prime(mpz_t out, int bit_len, random_fn random) {
     static const int c = 25; /* Number of Miller-Rabbin tests */
 
     mpz_t p, q, r, t1;
-#if (__GNU_MP_VERSION >= 5.0)
+#if (__GNU_MP_VERSION >= 5)
     mpz_inits(p, q, r, t1, NULL);
 #else
     mpz_init(p);
@@ -41,7 +41,7 @@ void generate_safe_prime(mpz_t out, int bit_len, random_fn random) {
 
     mpz_set(out, q_composite ? r : p);
 
-#if (__GNU_MP_VERSION >= 5.0)
+#if (__GNU_MP_VERSION >= 5)
     mpz_clears(p, q, r, t1, NULL);
 #else
     mpz_clear(p);
@@ -71,7 +71,7 @@ key_share_t **tc_generate_keys(key_metainfo_t **out, size_t bit_size, uint16_t k
     size_t q_prime_size = bit_size - p_prime_size - 1;
 
     mpz_t pr, qr, p, q, d, e, ll, m, n, delta_inv, divisor, r, vk_v, vk_u, s_i, vk_i;
-#if (__GNU_MP_VERSION >= 5.0)
+#if (__GNU_MP_VERSION >= 5)
     mpz_inits(pr, qr, p, q, d, e, ll, m, n, delta_inv, divisor, r, vk_v, vk_u, s_i, vk_i, NULL);
 #else
     mpz_init(pr);
@@ -167,7 +167,7 @@ key_share_t **tc_generate_keys(key_metainfo_t **out, size_t bit_size, uint16_t k
     }
 
     clear_poly(poly);
-#if (__GNU_MP_VERSION >= 5.0)
+#if (__GNU_MP_VERSION >= 5)
     mpz_clears(pr, qr, p, q, d, e, ll, m, n, delta_inv, divisor, r, vk_v, vk_u, s_i, vk_i, NULL);
 #else
     mpz_clear(pr);

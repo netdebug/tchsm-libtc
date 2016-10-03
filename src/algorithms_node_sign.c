@@ -24,7 +24,7 @@ signature_share_t * tc_node_sign(const key_share_t * share, const bytes_t * doc,
     signature_share_t * out = tc_init_signature_share();
 
     mpz_t x, n, e, s_i, v, u, vk_i, xi, xi_2, r, v_prime, x_tilde, x_prime, c, z;
-#if (__GNU_MP_VERSION >= 5.0)
+#if (__GNU_MP_VERSION >= 5)
     mpz_inits(x, n, e, s_i, v, u, vk_i, xi, xi_2, r, v_prime, x_tilde, x_prime, c, z, NULL);
 #else
     mpz_init(x);
@@ -133,7 +133,7 @@ signature_share_t * tc_node_sign(const key_share_t * share, const bytes_t * doc,
     TC_MPZ_TO_BYTES(out->x_i, xi);
     out->id = share->id;
 
-#if (__GNU_MP_VERSION >= 5.0)
+#if (__GNU_MP_VERSION >= 5)
     mpz_clears(x, n, e, s_i, v, u, vk_i, xi, xi_2, r, v_prime, x_tilde, x_prime, c, z, NULL);
 #else
     mpz_clear(x);

@@ -8,7 +8,7 @@ extern const unsigned int HASH_LEN; /* Defined somewhere :P */
 
 int tc_verify_signature(const signature_share_t * signature, const bytes_t * doc, const key_metainfo_t * info){
     mpz_t x, xi, z, c, n, e, v, u, vk_i, delta, xtilde, xi2, neg_c, v_prime, xi_neg_2c, x_prime, aux;
-#if (__GNU_MP_VERSION >= 5.0)
+#if (__GNU_MP_VERSION >= 5)
     mpz_inits(x, xi, z, c, n, e, v, u, vk_i, delta, xtilde, xi2, neg_c, v_prime, xi_neg_2c, x_prime, aux, NULL);
 #else
     mpz_init(x);
@@ -124,7 +124,7 @@ int tc_verify_signature(const signature_share_t * signature, const bytes_t * doc
     int result = mpz_cmp(h, c);
     mpz_clear(h);
 
-#if (__GNU_MP_VERSION >= 5.0)
+#if (__GNU_MP_VERSION >= 5)
     mpz_clears(x, xi, z, c, n, e, v, u, vk_i, delta, xtilde, xi2, neg_c, v_prime, xi_neg_2c, x_prime, aux, NULL);
 #else
     mpz_clear(x);

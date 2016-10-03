@@ -16,7 +16,7 @@ int tc_rsa_verify(bytes_t * signature, bytes_t * doc, key_metainfo_t * info, tc_
 	bytes_t * doc_pkcs1 = tc_prepare_document(doc, hashtype, info);
 
 	mpz_t c, x, e, n, new_x;
-#if (__GNU_MP_VERSION >= 5.0)
+#if (__GNU_MP_VERSION >= 5)
 	mpz_inits(c, x, e, n, new_x, NULL);
 #else
     mpz_init(c);
@@ -35,7 +35,7 @@ int tc_rsa_verify(bytes_t * signature, bytes_t * doc, key_metainfo_t * info, tc_
 	int cmp = mpz_cmp(x, new_x);
 
 	tc_clear_bytes(doc_pkcs1);
-#if (__GNU_MP_VERSION >= 5.0)
+#if (__GNU_MP_VERSION >= 5)
 	mpz_clears(c, x, e, n, new_x, NULL);
 #else
     mpz_clear(c);
