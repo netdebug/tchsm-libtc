@@ -56,7 +56,8 @@ START_TEST(test_poly_eval_ui){
 
     poly_eval_ui(res, &p, 0);
     ck_assert(mpz_cmp_si(res, 1) == 0);
-    mpz_clears(res,y,NULL);
+    mpz_clear(res);
+    mpz_clear(y);
 }
 END_TEST
 

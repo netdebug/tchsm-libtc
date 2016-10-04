@@ -38,7 +38,8 @@ START_TEST(test_generate_safe_prime)
         ck_assert(mpz_probab_prime_p(q, 25));
 
         fprintf(stderr, "p_size: %zu, q_size: %zu\n", mpz_sizeinbase(p, 2), mpz_sizeinbase(q, 2));
-        mpz_clears(p, q, NULL);
+        mpz_clear(p);
+        mpz_clear(q);
     }
 END_TEST
 
