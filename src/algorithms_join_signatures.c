@@ -51,7 +51,7 @@ bytes_t * tc_join_signatures(const signature_share_t ** signatures,
     mpz_init(lambda_k_2);
     mpz_init(aux);
     mpz_init(a);
-    mpz_init(n);
+    mpz_init(b);
     mpz_init(wa);
     mpz_init(xb);
     mpz_init(y);
@@ -154,6 +154,7 @@ void lagrange_interpolation(mpz_t out, int j, int k,
     mpz_mul(out, out, num);
     mpz_fdiv_q(out, out, den);
 
-    mpz_clears(num, den, NULL);
+    mpz_clear(num);
+    mpz_clear(den);
 }
 
