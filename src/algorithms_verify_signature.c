@@ -8,8 +8,28 @@ extern const unsigned int HASH_LEN; /* Defined somewhere :P */
 
 int tc_verify_signature(const signature_share_t * signature, const bytes_t * doc, const key_metainfo_t * info){
     mpz_t x, xi, z, c, n, e, v, u, vk_i, delta, xtilde, xi2, neg_c, v_prime, xi_neg_2c, x_prime, aux;
+#if (__GNU_MP_VERSION >= 5)
     mpz_inits(x, xi, z, c, n, e, v, u, vk_i, delta, xtilde, xi2, neg_c, v_prime, xi_neg_2c, x_prime, aux, NULL);
-    
+#else
+    mpz_init(x);
+    mpz_init(xi);
+    mpz_init(z);
+    mpz_init(c);
+    mpz_init(n);
+    mpz_init(e);
+    mpz_init(v);
+    mpz_init(u);
+    mpz_init(vk_i);
+    mpz_init(delta);
+    mpz_init(xtilde);
+    mpz_init(xi2);
+    mpz_init(neg_c);
+    mpz_init(v_prime);
+    mpz_init(xi_neg_2c);
+    mpz_init(x_prime);
+    mpz_init(aux);
+#endif
+
     TC_BYTES_TO_MPZ(x, doc);
     TC_BYTES_TO_MPZ(xi, signature->x_i);
     TC_BYTES_TO_MPZ(z, signature->z);
@@ -53,7 +73,7 @@ int tc_verify_signature(const signature_share_t * signature, const bytes_t * doc
     mpz_mod(v_prime, v_prime, n);
 
     // x' = x~^z * x_i^(-2c)
-    
+
     mpz_mul_si(aux, neg_c, 2);
     mpz_powm(xi_neg_2c, xi, aux, n);
 
@@ -104,7 +124,27 @@ int tc_verify_signature(const signature_share_t * signature, const bytes_t * doc
     int result = mpz_cmp(h, c);
     mpz_clear(h);
 
+#if (__GNU_MP_VERSION >= 5)
     mpz_clears(x, xi, z, c, n, e, v, u, vk_i, delta, xtilde, xi2, neg_c, v_prime, xi_neg_2c, x_prime, aux, NULL);
+#else
+    mpz_clear(x);
+    mpz_clear(xi);
+    mpz_clear(z);
+    mpz_clear(c);
+    mpz_clear(n);
+    mpz_clear(e);
+    mpz_clear(v);
+    mpz_clear(u);
+    mpz_clear(vk_i);
+    mpz_clear(delta);
+    mpz_clear(xtilde);
+    mpz_clear(xi2);
+    mpz_clear(neg_c);
+    mpz_clear(v_prime);
+    mpz_clear(xi_neg_2c);
+    mpz_clear(x_prime);
+    mpz_clear(aux);
+#endif
 
     return result == 0;
 }

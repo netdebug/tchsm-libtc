@@ -10,7 +10,9 @@ START_TEST(test_poly_eval){
 
     mpz_t coeffs[10];
     mpz_t x, res, y;
-    mpz_inits(x, res, y, NULL);
+	mpz_init(x);
+	mpz_init(res);
+	mpz_init(y);
     for(int i=0; i<10; i++){
         mpz_init_set_ui(coeffs[i], 1);
     }
@@ -35,7 +37,8 @@ END_TEST
 START_TEST(test_poly_eval_ui){
     // Easy cases.
     mpz_t res,y;
-    mpz_inits(res,y,NULL);
+    mpz_init(res);
+    mpz_init(y);
 
     mpz_t coeffs[10];
     for(int i=0; i<10; i++){
@@ -53,7 +56,8 @@ START_TEST(test_poly_eval_ui){
 
     poly_eval_ui(res, &p, 0);
     ck_assert(mpz_cmp_si(res, 1) == 0);
-    mpz_clears(res,y,NULL);
+    mpz_clear(res);
+    mpz_clear(y);
 }
 END_TEST
 

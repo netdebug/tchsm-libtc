@@ -25,7 +25,8 @@ END_TEST
 START_TEST(test_generate_safe_prime)
     {
         mpz_t p, q;
-        mpz_inits(p, q, NULL);
+        mpz_init(p);
+        mpz_init(q);
         size_t key_size = 512;
 
         generate_safe_prime(p, key_size, random_dev);
@@ -37,14 +38,26 @@ START_TEST(test_generate_safe_prime)
         ck_assert(mpz_probab_prime_p(q, 25));
 
         fprintf(stderr, "p_size: %zu, q_size: %zu\n", mpz_sizeinbase(p, 2), mpz_sizeinbase(q, 2));
-        mpz_clears(p, q, NULL);
+        mpz_clear(p);
+        mpz_clear(q);
     }
 END_TEST
 
 START_TEST(test_verify_invert)
     {
         mpz_t p, q, p_, q_, m, e, d, r;
+#if (__GNU_MP_VERSION >= 5)
         mpz_inits(p, q, p_, q_, m, e, d, r, NULL);
+#else
+        mpz_init(p);
+        mpz_init(q);
+        mpz_init(p_);
+        mpz_init(q_);
+        mpz_init(m);
+        mpz_init(e);
+        mpz_init(d);
+        mpz_init(r);
+#endif
         generate_safe_prime(p, 256, random_dev);
         generate_safe_prime(q, 256, random_dev);
 
@@ -64,7 +77,18 @@ START_TEST(test_verify_invert)
 
         ck_assert(mpz_cmp_si(r, 1) == 0);
 
+#if (__GNU_MP_VERSION >= 5)
         mpz_clears(p, q, p_, q_, m, e, d, r, NULL);
+#else
+        mpz_clear(p);
+        mpz_clear(q);
+        mpz_clear(p_);
+        mpz_clear(q_);
+        mpz_clear(m);
+        mpz_clear(e);
+        mpz_clear(d);
+        mpz_clear(r);
+#endif
     }
 END_TEST
 

@@ -38,7 +38,7 @@ START_TEST(test_serialization_key_share_error) {
         share0_b64[1] = '0';
         key_share_t *share0 = tc_deserialize_key_share(share0_b64);
 
-        ck_assert_ptr_eq(share0, NULL);
+        ck_assert(share0 == NULL);
         tc_clear_key_shares(shares, info);
         tc_clear_key_metainfo(info);
         free(share0_b64);

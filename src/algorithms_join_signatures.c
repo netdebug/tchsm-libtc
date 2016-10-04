@@ -36,8 +36,26 @@ bytes_t * tc_join_signatures(const signature_share_t ** signatures,
     bytes_t * out = tc_init_bytes(NULL, 0);
 
     mpz_t x, n, e, u, delta, e_prime, w, s_i, lambda_k_2, aux, a, b, wa, xb, y;
+#if (__GNU_MP_VERSION >= 5)
     mpz_inits(x, n, e, u, delta, e_prime, w, s_i, lambda_k_2, aux, a, b, wa, xb, y,
 	      NULL);
+#else
+    mpz_init(x);
+    mpz_init(n);
+    mpz_init(e);
+    mpz_init(u);
+    mpz_init(delta);
+    mpz_init(e_prime);
+    mpz_init(w);
+    mpz_init(s_i);
+    mpz_init(lambda_k_2);
+    mpz_init(aux);
+    mpz_init(a);
+    mpz_init(b);
+    mpz_init(wa);
+    mpz_init(xb);
+    mpz_init(y);
+#endif
 
     TC_BYTES_TO_MPZ(x, document);
     TC_BYTES_TO_MPZ(n, info->public_key->n);
@@ -93,8 +111,26 @@ bytes_t * tc_join_signatures(const signature_share_t ** signatures,
 
     TC_MPZ_TO_BYTES(out, y);
 
+#if (__GNU_MP_VERSION >= 5)
     mpz_clears(x, n, e, u, delta, e_prime, w, s_i, lambda_k_2, aux, a, b, wa, xb,
 	       y, NULL);
+#else
+    mpz_clear(x);
+    mpz_clear(n);
+    mpz_clear(e);
+    mpz_clear(u);
+    mpz_clear(delta);
+    mpz_clear(e_prime);
+    mpz_clear(w);
+    mpz_clear(s_i);
+    mpz_clear(lambda_k_2);
+    mpz_clear(aux);
+    mpz_clear(a);
+    mpz_clear(b);
+    mpz_clear(wa);
+    mpz_clear(xb);
+    mpz_clear(y);
+#endif
 
     assert(out != NULL && out->data != NULL);
     return out;
@@ -118,6 +154,7 @@ void lagrange_interpolation(mpz_t out, int j, int k,
     mpz_mul(out, out, num);
     mpz_fdiv_q(out, out, den);
 
-    mpz_clears(num, den, NULL);
+    mpz_clear(num);
+    mpz_clear(den);
 }
 

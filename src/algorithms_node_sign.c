@@ -24,7 +24,25 @@ signature_share_t * tc_node_sign(const key_share_t * share, const bytes_t * doc,
     signature_share_t * out = tc_init_signature_share();
 
     mpz_t x, n, e, s_i, v, u, vk_i, xi, xi_2, r, v_prime, x_tilde, x_prime, c, z;
+#if (__GNU_MP_VERSION >= 5)
     mpz_inits(x, n, e, s_i, v, u, vk_i, xi, xi_2, r, v_prime, x_tilde, x_prime, c, z, NULL);
+#else
+    mpz_init(x);
+    mpz_init(n);
+    mpz_init(e);
+    mpz_init(s_i);
+    mpz_init(v);
+    mpz_init(u);
+    mpz_init(vk_i);
+    mpz_init(xi);
+    mpz_init(xi_2);
+    mpz_init(r);
+    mpz_init(v_prime);
+    mpz_init(x_tilde);
+    mpz_init(x_prime);
+    mpz_init(c);
+    mpz_init(z);
+#endif
 
     TC_BYTES_TO_MPZ(x, doc);
     TC_BYTES_TO_MPZ(n, info->public_key->n);
@@ -45,12 +63,12 @@ signature_share_t * tc_node_sign(const key_share_t * share, const bytes_t * doc,
 	mpz_mod(x, x, n);
 	mpz_clear(ue);
     }
-    
+
     // xi = x^(2*share) mod n
     mpz_mul_ui(xi, s_i, 2);
     mpz_powm(xi, x, xi, n);
 
-    // xi_2 = xi^2 
+    // xi_2 = xi^2
     mpz_powm_ui(xi_2, xi, 2, n);
 
     // r = abs(random(bytes_len))
@@ -115,6 +133,24 @@ signature_share_t * tc_node_sign(const key_share_t * share, const bytes_t * doc,
     TC_MPZ_TO_BYTES(out->x_i, xi);
     out->id = share->id;
 
+#if (__GNU_MP_VERSION >= 5)
     mpz_clears(x, n, e, s_i, v, u, vk_i, xi, xi_2, r, v_prime, x_tilde, x_prime, c, z, NULL);
+#else
+    mpz_clear(x);
+    mpz_clear(n);
+    mpz_clear(e);
+    mpz_clear(s_i);
+    mpz_clear(v);
+    mpz_clear(u);
+    mpz_clear(vk_i);
+    mpz_clear(xi);
+    mpz_clear(xi_2);
+    mpz_clear(r);
+    mpz_clear(v_prime);
+    mpz_clear(x_tilde);
+    mpz_clear(x_prime);
+    mpz_clear(c);
+    mpz_clear(z);
+#endif
     return out;
 }
