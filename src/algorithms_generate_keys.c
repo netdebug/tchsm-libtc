@@ -24,11 +24,7 @@ void generate_safe_prime(mpz_t out, int bit_len, random_fn random) {
 #endif
     int q_composite, r_composite;
 
-    /* The random prime has to be at most 2 bits less than the
-     * expected safe prime. The reason is that we try for
-     * 2 * random_prime + 1 to be prime too. If that's prime,
-     * the resulting safe prime may have 2 more bits. */
-    int random_prime_bit_len = bit_len - 2;
+    int random_prime_bit_len = bit_len;
     do {
 	random_prime(p, random_prime_bit_len, random);
 	mpz_sub_ui(t1, p, 1);
@@ -71,7 +67,8 @@ key_share_t **tc_generate_keys(key_metainfo_t **out, size_t bit_size, uint16_t k
 
     static const int F4 = 65537; // Fermat fourth number.
 
-    size_t prime_size = bit_size / 2;
+    size_t p_prime_size = (bit_size + 1) / 2;
+    size_t q_prime_size = bit_size - p_prime_size - 1;
 
     mpz_t pr, qr, p, q, d, e, ll, m, n, delta_inv, divisor, r, vk_v, vk_u, s_i, vk_i;
 #if (__GNU_MP_VERSION >= 5)
@@ -95,8 +92,8 @@ key_share_t **tc_generate_keys(key_metainfo_t **out, size_t bit_size, uint16_t k
     mpz_init(vk_i);
 #endif
 
-    generate_safe_prime(p, prime_size, random_dev);
-    generate_safe_prime(q, prime_size, random_dev);
+    generate_safe_prime(p, p_prime_size, random_dev);
+    generate_safe_prime(q, q_prime_size, random_dev);
 
     // p' = (p-1)/2
     mpz_sub_ui(pr, p, 1);
@@ -109,6 +106,7 @@ key_share_t **tc_generate_keys(key_metainfo_t **out, size_t bit_size, uint16_t k
     // n = p * q, m = p' * q'
     mpz_mul(n, p, q);
     mpz_mul(m, pr, qr);
+    
     TC_MPZ_TO_BYTES(info->public_key->n, n);
 
     mpz_set_ui(ll, l);
